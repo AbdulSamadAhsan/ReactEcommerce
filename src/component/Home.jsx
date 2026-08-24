@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import Hero from "./Hero";
 import Footer from "./Footer";
+import { Link } from "react-router-dom";
+
+
 export default function Home() {
    const [menuOpen, setMenuOpen] = useState(false);
   const [reviewIndex, setReviewIndex] = useState(0);
@@ -37,6 +40,8 @@ export default function Home() {
           <a href="#new">On Sale</a>
           <a href="#new">New Arrivals</a>
           <a href="#brands">Brands</a>
+
+      <Link to="/cart">View Cart</Link>
         </nav>
         <div className="search-box"><Search size={20} /><input placeholder="Search for products..." /></div>
         <div className="header-icons"><Search className="mobile-only" /><ShoppingCart /><UserRound /></div>
