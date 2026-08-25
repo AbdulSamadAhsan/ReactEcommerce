@@ -1,6 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap"
-);
-
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap");
 
 /* ========================================
    GLOBAL
@@ -18,11 +16,8 @@ html {
 body {
     width: 100%;
     margin: 0;
-
     overflow-x: hidden;
-
     font-family: Inter, Arial, sans-serif;
-
     color: #111;
     background: #fff;
 }
@@ -46,10 +41,140 @@ img {
 ======================================== */
 
 .shell {
-    width: min(1110px,
-            calc(100% - 32px));
-
+    width: min(1110px, calc(100% - 32px));
     margin: 0 auto;
+}
+
+
+/* ========================================
+   PROMO BAR
+======================================== */
+
+.promo-bar {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 38px;
+
+    padding: 8px 45px;
+
+    background: #000;
+    color: #fff;
+
+    font-size: 12px;
+}
+
+.promo-bar svg {
+    position: absolute;
+
+    right: 40px;
+
+    cursor: pointer;
+}
+
+.promo-bar u {
+    font-weight: 600;
+}
+
+
+/* ========================================
+   HEADER
+======================================== */
+
+.header {
+    min-height: 80px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 30px;
+}
+
+.logo {
+    color: #000;
+
+    text-decoration: none;
+
+    font-family: Montserrat, sans-serif;
+
+    font-size: 30px;
+    font-weight: 900;
+
+    letter-spacing: -2px;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+
+    gap: 22px;
+}
+
+.nav a {
+    display: flex;
+    align-items: center;
+
+    gap: 4px;
+
+    color: #111;
+
+    text-decoration: none;
+
+    font-size: 13px;
+}
+
+.search-box {
+    flex: 1;
+
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 0 15px;
+
+    border-radius: 24px;
+
+    background: #f2f2f2;
+
+    color: #777;
+}
+
+.search-box input {
+    width: 100%;
+
+    border: 0;
+    outline: 0;
+
+    background: transparent;
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+
+    gap: 15px;
+}
+
+.header-icons svg {
+    cursor: pointer;
+}
+
+.icon-btn {
+    padding: 0;
+
+    border: 0;
+
+    background: transparent;
+}
+
+.mobile-only {
+    display: none;
 }
 
 
@@ -676,523 +801,8 @@ img {
 .related {
     width: 100%;
 
-    padding-top: 5px;
-}
-
-.related h2 {
-    margin: 0 0 28px;
-
-    text-align: center;
-
-    font-family: Montserrat, sans-serif;
-
-    font-size: 31px;
-    font-weight: 900;
-
-    letter-spacing: -1.5px;
-}
-
-.related-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 16px;
-}
-
-.related-grid article {
-    min-width: 0;
-}
-
-.rimg {
-    width: 100%;
-    height: 200px;
-
-    overflow: hidden;
-
-    border-radius: 15px;
-
-    background: #f4f4f4;
-}
-
-.rimg img {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-
-    object-fit: cover;
-}
-
-.related h3 {
-    margin: 10px 0 5px;
-
-    font-size: 14px;
-}
-
-.rr {
-    display: flex;
-
-    align-items: center;
-
-    gap: 7px;
-
-    font-size: 10px;
-}
-
-.rp {
-    display: flex;
-
-    align-items: center;
-
-    flex-wrap: wrap;
-
-    gap: 7px;
-
-    margin-top: 5px;
-}
-
-.rp b {
-    font-size: 17px;
-}
-
-.rp del {
-    color: #aaa;
-
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.rp em {
-    padding: 4px 7px;
-
-    font-size: 9px;
-}
-
-
-/* ========================================
-   NOT FOUND
-======================================== */
-
-.not-found {
-    padding: 80px 0;
-
-    text-align: center;
-
-    font-size: 28px;
-    font-weight: 700;
-}
-
-
-/* ========================================
-   TABLET
-======================================== */
-
-@media (max-width: 900px) {
-
-    .product {
-        grid-template-columns: 1fr;
-
-        gap: 35px;
-    }
-
-    .gallery {
-        max-width: 700px;
-
-        margin: 0 auto;
-    }
-
-    .info h1 {
-        font-size: 32px;
-    }
-
-    .related-grid {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-    }
-
-    .rimg {
-        height: 260px;
-    }
-}
-
-
-/* ========================================
-   MOBILE
-======================================== */
-
-@media (max-width: 640px) {
-
-    .shell {
-        width: calc(100% - 24px);
-    }
-
-
-    /* Breadcrumb */
-
-    .crumb {
-        padding: 16px 0 18px;
-
-        overflow-x: auto;
-
-        white-space: nowrap;
-
-        scrollbar-width: none;
-    }
-
-    .crumb::-webkit-scrollbar {
-        display: none;
-    }
-
-
-    /* Gallery */
-
-    .gallery {
-        display: flex;
-
-        flex-direction: column;
-
-        gap: 12px;
-
-        width: 100%;
-    }
-
-    .mainimg {
-        order: 1;
-
-        width: 100%;
-        height: auto;
-
-        aspect-ratio: 1 / 1;
-
-        border-radius: 16px;
-    }
-
-    .thumbs {
-        order: 2;
-
-        display: grid;
-
-        grid-template-columns:
-            repeat(3, minmax(0, 1fr));
-
-        gap: 10px;
-
-        width: 100%;
-    }
-
-    .thumbs button {
-        width: 100%;
-        height: auto;
-
-        aspect-ratio: 1 / 1;
-
-        border-radius: 12px;
-    }
-
-
-    /* Product information */
-
-    .info {
-        margin-top: 25px;
-    }
-
-    .info h1 {
-        font-size: 27px;
-
-        line-height: 1.1;
-
-        letter-spacing: -1.2px;
-    }
-
-    .info p {
-        font-size: 13px;
-    }
-
-
-    /* Price */
-
-    .price b {
-        font-size: 25px;
-    }
-
-    .price del {
-        font-size: 23px;
-    }
-
-
-    /* Colors */
-
-    .colors button {
-        width: 38px;
-        height: 38px;
-    }
-
-
-    /* Sizes */
-
-    .sizes button {
-        padding: 10px 16px;
-    }
-
-
-    /* Cart */
-
-    .buy {
-        gap: 10px;
-    }
-
-    .qty {
-        width: 110px;
-        min-width: 110px;
-
-        height: 48px;
-    }
-
-    .add {
-        min-height: 48px;
-    }
-
-
-    /* Tabs */
-
-    .tabs {
-        margin-top: 35px;
-    }
-
-    .tabs button {
-        padding: 13px 5px;
-
-        font-size: 12px;
-
-        line-height: 1.35;
-    }
-
-
-    /* Reviews */
-
-    .review-head {
-        align-items: center;
-    }
-
-    .review-head h2 {
-        font-size: 18px;
-
-        white-space: nowrap;
-    }
-
-    .latest {
-        display: none;
-    }
-
-    .write {
-        padding: 0 13px;
-
-        white-space: nowrap;
-
-        font-size: 11px;
-    }
-
-    .review-grid {
-        grid-template-columns: 1fr;
-
-        gap: 12px;
-    }
-
-    .review-grid article {
-        min-height: auto;
-
-        padding: 17px;
-    }
-
-    .review-grid p {
-        font-size: 12px;
-    }
-
-
-    /* Related */
-
-    .related {
-        overflow: hidden;
-    }
-
-    .related h2 {
-        margin-bottom: 22px;
-
-        font-size: 26px;
-
-        line-height: 1.1;
-    }
-
-    .related-grid {
-        display: flex;
-
-        gap: 14px;
-
-        overflow-x: auto;
-        overflow-y: hidden;
-
-        padding-bottom: 12px;
-
-        scroll-snap-type: x mandatory;
-
-        scrollbar-width: none;
-
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .related-grid::-webkit-scrollbar {
-        display: none;
-    }
-
-    .related-grid article {
-        flex: 0 0 70%;
-
-        min-width: 0;
-
-        scroll-snap-align: start;
-    }
-
-    .rimg {
-        width: 100%;
-        height: auto;
-
-        aspect-ratio: 1 / 1;
-    }
-}
-
-
-/* ========================================
-   SMALL MOBILE
-======================================== */
-
-@media (max-width: 480px) {
-
-    .shell {
-        width: calc(100% - 20px);
-    }
-
-    .info h1 {
-        font-size: 24px;
-    }
-
-    .mainimg {
-        border-radius: 14px;
-    }
-
-    .thumbs {
-        gap: 8px;
-    }
-
-    .thumbs button {
-        border-radius: 10px;
-    }
-
-    .sizes button {
-        padding: 9px 13px;
-
-        font-size: 11px;
-    }
-
-    .buy {
-        gap: 8px;
-    }
-
-    .qty {
-        width: 100px;
-        min-width: 100px;
-    }
-
-    .add {
-        font-size: 13px;
-    }
-
-    .review-head h2 {
-        font-size: 16px;
-    }
-
-    .write {
-        height: 36px;
-
-        padding: 0 12px;
-    }
-
-    .related-grid article {
-        flex-basis: 72%;
-    }
-
-    .related h2 {
-        font-size: 24px;
-    }
-}
-
-
-/* ========================================
-   VERY SMALL MOBILE
-======================================== */
-
-@media (max-width: 360px) {
-
-    .shell {
-        width: calc(100% - 16px);
-    }
-
-    .info h1 {
-        font-size: 22px;
-    }
-
-    .buy {
-        flex-direction: column;
-    }
-
-    .qty {
-        width: 100%;
-        min-width: 100%;
-    }
-
-    .add {
-        width: 100%;
-
-        min-height: 48px;
-    }
-
-    .review-head {
-        align-items: flex-start;
-
-        gap: 8px;
-    }
-
-    .review-head h2 {
-        font-size: 15px;
-    }
-
-    .write {
-        padding: 0 9px;
-
-        font-size: 10px;
-    }
-
-    .tabs button {
-        padding: 12px 3px;
-
-        font-size: 10px;
-    }
-
-    .related-grid article {
-        flex-basis: 82%;
-    }
-}
-
-
-
-/* ========================================
-   RELATED PRODUCTS
-======================================== */
-
-.related {
-    width: 100%;
     padding-top: 20px;
+
     overflow: hidden;
 }
 
@@ -1211,9 +821,6 @@ img {
     letter-spacing: -1.5px;
 }
 
-
-/* Desktop */
-
 .related-grid {
     display: grid;
 
@@ -1227,6 +834,7 @@ img {
 
 .related-grid article {
     min-width: 0;
+
     width: 100%;
 }
 
@@ -1311,10 +919,32 @@ img {
 
 
 /* ========================================
-   LARGE TABLET
+   NOT FOUND
 ======================================== */
 
-@media (max-width: 1100px) {
+.not-found {
+    padding: 80px 0;
+
+    text-align: center;
+
+    font-size: 28px;
+    font-weight: 700;
+}
+
+
+/* ========================================
+   RESPONSIVE - 1100PX
+======================================== */
+
+@media screen and (max-width: 1100px) {
+
+    .header {
+        gap: 18px;
+    }
+
+    .nav {
+        gap: 14px;
+    }
 
     .related-grid {
         grid-template-columns:
@@ -1330,10 +960,96 @@ img {
 
 
 /* ========================================
-   TABLET
+   TABLET - 900PX
 ======================================== */
 
-@media (max-width: 850px) {
+@media screen and (max-width: 900px) {
+
+    .product {
+        grid-template-columns: 1fr;
+
+        gap: 35px;
+    }
+
+    .gallery {
+        width: 100%;
+
+        max-width: 700px;
+
+        margin: 0 auto;
+    }
+
+    .info {
+        width: 100%;
+    }
+
+    .info h1 {
+        font-size: 32px;
+    }
+
+    .review-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* ========================================
+   HEADER TABLET
+======================================== */
+
+@media screen and (max-width: 850px) {
+
+    .header {
+        min-height: 70px;
+
+        gap: 15px;
+    }
+
+    .logo {
+        font-size: 27px;
+    }
+
+    .nav {
+        display: none;
+
+        position: absolute;
+
+        z-index: 1000;
+
+        top: 108px;
+        left: 16px;
+        right: 16px;
+
+        padding: 18px;
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        border-radius: 12px;
+
+        background: #fff;
+
+        box-shadow:
+            0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .nav.open {
+        display: flex;
+    }
+
+    .mobile-only {
+        display: block;
+    }
+
+    .search-box {
+        display: none;
+    }
+
+    .header-icons {
+        margin-left: auto;
+    }
 
     .related-grid {
         grid-template-columns:
@@ -1345,94 +1061,363 @@ img {
     .related h2 {
         font-size: 29px;
     }
-
-    .related h3 {
-        font-size: 14px;
-    }
 }
 
 
 /* ========================================
-   MOBILE
+   MOBILE - 640PX
 ======================================== */
 
-@media (max-width: 640px) {
+@media screen and (max-width: 640px) {
+
+    .shell {
+        width: calc(100% - 24px);
+    }
+
+
+    /* Promo */
+
+    .promo-bar {
+        min-height: 34px;
+
+        padding:
+            7px 36px 7px 12px;
+
+        font-size: 10px;
+
+        text-align: center;
+    }
+
+    .promo-bar svg {
+        right: 12px;
+
+        width: 16px;
+        height: 16px;
+    }
+
+
+    /* Header */
+
+    .header {
+        min-height: 62px;
+
+        gap: 12px;
+    }
+
+    .logo {
+        font-size: 25px;
+    }
+
+    .header-icons {
+        gap: 11px;
+    }
+
+    .header-icons svg {
+        width: 21px;
+        height: 21px;
+    }
+
+    .icon-btn svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .nav {
+        top: 92px;
+    }
+
+
+    /* Breadcrumb */
+
+    .crumb {
+        padding: 16px 0 18px;
+
+        overflow-x: auto;
+
+        white-space: nowrap;
+
+        scrollbar-width: none;
+    }
+
+    .crumb::-webkit-scrollbar {
+        display: none;
+    }
+
+
+    /* Product */
+
+    .product {
+        display: block;
+    }
+
+
+    /* Gallery */
+
+    .gallery {
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 12px;
+
+        width: 100%;
+
+        max-width: none;
+    }
+
+    .mainimg {
+        order: 1;
+
+        width: 100%;
+
+        height: auto;
+
+        aspect-ratio: 1 / 1;
+
+        border-radius: 16px;
+    }
+
+    .mainimg img {
+        width: 100%;
+
+        height: 100%;
+
+        object-fit: cover;
+    }
+
+    .thumbs {
+        order: 2;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+
+        gap: 10px;
+
+        width: 100%;
+    }
+
+    .thumbs button {
+        width: 100%;
+
+        height: auto;
+
+        aspect-ratio: 1 / 1;
+
+        border-radius: 12px;
+    }
+
+
+    /* Product information */
+
+    .info {
+        width: 100%;
+
+        margin-top: 27px;
+    }
+
+    .info h1 {
+        margin-top: 0;
+
+        font-size: 27px;
+
+        line-height: 1.08;
+
+        letter-spacing: -1.2px;
+
+        overflow-wrap: anywhere;
+    }
+
+    .info p {
+        font-size: 13px;
+
+        line-height: 1.6;
+    }
+
+
+    /* Rating */
+
+    .rating {
+        font-size: 11px;
+    }
+
+    .stars {
+        font-size: 18px;
+    }
+
+
+    /* Price */
+
+    .price {
+        flex-wrap: wrap;
+    }
+
+    .price b {
+        font-size: 25px;
+    }
+
+    .price del {
+        font-size: 23px;
+    }
+
+
+    /* Colors */
+
+    .colors button {
+        width: 38px;
+
+        height: 38px;
+    }
+
+
+    /* Sizes */
+
+    .sizes {
+        display: flex;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+    }
+
+    .sizes button {
+        flex: 1 1 auto;
+
+        min-width: 80px;
+
+        padding:
+            10px 14px;
+    }
+
+
+    /* Cart */
+
+    .buy {
+        gap: 10px;
+    }
+
+    .qty {
+        width: 110px;
+
+        min-width: 110px;
+
+        height: 48px;
+    }
+
+    .add {
+        min-width: 0;
+
+        min-height: 48px;
+    }
+
+
+    /* Tabs */
+
+    .tabs {
+        margin-top: 35px;
+
+        grid-template-columns:
+            repeat(3, minmax(0, 1fr));
+    }
+
+    .tabs button {
+        min-width: 0;
+
+        padding: 13px 5px;
+
+        font-size: 12px;
+
+        line-height: 1.3;
+    }
+
+
+    /* Reviews */
+
+    .review-head {
+        align-items: center;
+
+        gap: 10px;
+    }
+
+    .review-head h2 {
+        font-size: 18px;
+
+        white-space: nowrap;
+    }
+
+    .latest {
+        display: none;
+    }
+
+    .write {
+        padding: 0 13px;
+
+        white-space: nowrap;
+
+        font-size: 11px;
+    }
+
+    .review-grid {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .review-grid article {
+        min-height: auto;
+
+        padding: 17px;
+    }
+
+    .review-grid p {
+        font-size: 12px;
+    }
+
+
+    /* Related */
 
     .related {
-        padding-top: 10px;
+        padding-top: 15px;
+
         overflow: hidden;
     }
 
     .related h2 {
         margin-bottom: 22px;
 
-        font-size: 27px;
+        font-size: 26px;
 
-        line-height: 1.05;
+        line-height: 1.1;
     }
 
     .related-grid {
-        display: flex;
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
 
         gap: 14px;
 
         width: 100%;
 
-        overflow-x: auto;
-        overflow-y: hidden;
-
-        padding-bottom: 12px;
-
-        scroll-snap-type: x mandatory;
-
-        -webkit-overflow-scrolling: touch;
-
-        scrollbar-width: none;
-    }
-
-    .related-grid::-webkit-scrollbar {
-        display: none;
+        overflow: visible;
     }
 
     .related-grid article {
-        flex: 0 0 72%;
+        width: 100%;
 
-        width: 72%;
-
-        scroll-snap-align: start;
+        min-width: 0;
     }
 
     .rimg {
-        aspect-ratio: 1 / 0.82;
-    }
+        width: 100%;
 
-    .related h3 {
-        font-size: 14px;
-    }
+        height: auto;
 
-    .rp b {
-        font-size: 18px;
-    }
+        aspect-ratio: 1 / 1;
 
-    .rp del {
-        font-size: 16px;
-    }
-}
-
-
-/* ========================================
-   SMALL MOBILE
-======================================== */
-
-@media (max-width: 480px) {
-
-    .related h2 {
-        font-size: 24px;
-    }
-
-    .related-grid article {
-        flex-basis: 78%;
-        width: 78%;
+        border-radius: 12px;
     }
 
     .related h3 {
@@ -1440,27 +1425,216 @@ img {
     }
 
     .rr {
+        gap: 4px;
+
         font-size: 10px;
+    }
+
+    .stars.small {
+        font-size: 12px;
+
+        letter-spacing: 0;
+    }
+
+    .rp {
+        gap: 5px;
     }
 
     .rp b {
         font-size: 17px;
     }
+
+    .rp del {
+        font-size: 14px;
+    }
+
+    .rp em {
+        padding: 4px 7px;
+
+        font-size: 9px;
+    }
 }
 
 
 /* ========================================
-   VERY SMALL MOBILE
+   SMALL MOBILE - 480PX
 ======================================== */
 
-@media (max-width: 360px) {
+@media screen and (max-width: 480px) {
+
+    .shell {
+        width: calc(100% - 20px);
+    }
+
+    .promo-bar {
+        font-size: 9px;
+    }
+
+    .header {
+        gap: 9px;
+    }
+
+    .logo {
+        font-size: 23px;
+    }
+
+    .header-icons {
+        gap: 8px;
+    }
+
+    .info h1 {
+        font-size: 24px;
+    }
+
+    .mainimg {
+        border-radius: 14px;
+    }
+
+    .thumbs {
+        gap: 8px;
+    }
+
+    .thumbs button {
+        border-radius: 10px;
+    }
+
+    .sizes button {
+        min-width: 70px;
+
+        padding: 9px 11px;
+
+        font-size: 11px;
+    }
+
+    .buy {
+        gap: 8px;
+    }
+
+    .qty {
+        width: 100px;
+
+        min-width: 100px;
+    }
+
+    .add {
+        padding: 0 10px;
+
+        font-size: 13px;
+    }
+
+    .review-head h2 {
+        font-size: 16px;
+    }
+
+    .write {
+        height: 36px;
+
+        padding: 0 11px;
+
+        font-size: 10px;
+    }
+
+    .related h2 {
+        font-size: 24px;
+    }
+
+    .related-grid {
+        gap: 10px;
+    }
+
+    .related h3 {
+        font-size: 12px;
+    }
+
+    .rr {
+        font-size: 9px;
+    }
+
+    .rp b {
+        font-size: 16px;
+    }
+
+    .rp del {
+        font-size: 14px;
+    }
+}
+
+
+/* ========================================
+   VERY SMALL MOBILE - 360PX
+======================================== */
+
+@media screen and (max-width: 360px) {
+
+    .shell {
+        width: calc(100% - 16px);
+    }
+
+    .promo-bar {
+        padding-left: 8px;
+
+        font-size: 8px;
+    }
+
+    .logo {
+        font-size: 21px;
+    }
+
+    .header-icons svg {
+        width: 19px;
+
+        height: 19px;
+    }
+
+    .info h1 {
+        font-size: 22px;
+    }
+
+    .buy {
+        flex-direction: column;
+    }
+
+    .qty {
+        width: 100%;
+
+        min-width: 100%;
+    }
+
+    .add {
+        width: 100%;
+
+        min-height: 48px;
+    }
+
+    .review-head {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .review-head>div {
+        width: 100%;
+    }
+
+    .write {
+        width: 100%;
+    }
+
+    .tabs button {
+        padding: 12px 2px;
+
+        font-size: 10px;
+    }
 
     .related h2 {
         font-size: 22px;
     }
 
-    .related-grid article {
-        flex-basis: 84%;
-        width: 84%;
+    .related-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .related h3 {
+        font-size: 14px;
     }
 }

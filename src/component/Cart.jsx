@@ -70,25 +70,20 @@ function CartItem({
 
       {/* DELETE PRODUCT */}
 
-      <button
-        type="button"
-        className="delete-button"
-        aria-label={`Remove ${item.name} from cart`}
-        onClick={() =>
+        <Trash2
+          className="trash"
+          size={22}
+          color="#ff3333"
+          strokeWidth={1.9}
+                onClick={() =>
           deleteItem(
             item.id,
             item.size,
             item.color
           )
         }
-      >
-        <Trash2
-          className="trash"
-          size={22}
-          color="#ff3333"
-          strokeWidth={1.9}
         />
-      </button>
+     
 
 
       {/* QUANTITY */}
