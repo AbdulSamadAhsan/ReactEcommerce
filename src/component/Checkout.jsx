@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ArrowRight, CreditCard } from "lucide-react";
 import "./Checkout.css";
+import Header from "./Header";
 
 
 export default function App() {
@@ -51,6 +52,7 @@ export default function App() {
 
   return (
    <>
+   <Header/>
        <div className="checkout-page">
       <div className="checkout-container">
         <div className="checkout-breadcrumb">
@@ -60,7 +62,7 @@ export default function App() {
 
         <h1 className="checkout-title">CHECKOUT</h1>
 
-        {cartItems.length === 0 ? (
+        {cartItems.length == 0 ? (
           <div className="empty-checkout">
             <h2>Your cart is empty</h2>
           </div>

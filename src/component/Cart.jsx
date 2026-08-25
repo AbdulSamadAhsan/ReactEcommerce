@@ -21,6 +21,7 @@ import Footer from "./Footer";
 import { Link } from "react-router-dom";
 
 import Swal from "sweetalert2";
+import Header from "./Header";
 
 
 /* =====================================================
@@ -356,120 +357,7 @@ function Newsletter() {
    HEADER
 ===================================================== */
 
-function Header() {
 
-  const [menuOpen, setMenuOpen] =
-    useState(false);
-
-
-  return (
-    <>
-
-      {/* PROMO BAR */}
-
-      <div className="promo-bar">
-
-        <span>
-          Sign up and get 20% off to your first order.{" "}
-
-          <u>
-            Sign Up Now
-          </u>
-
-        </span>
-
-        <X size={18} />
-
-      </div>
-
-
-      {/* HEADER */}
-
-      <header className="header shell">
-
-        <button
-          type="button"
-          className="icon-btn mobile-only"
-          onClick={() =>
-            setMenuOpen(!menuOpen)
-          }
-          aria-label="Toggle menu"
-        >
-          <Menu />
-        </button>
-
-
-        {/* LOGO */}
-
-        <Link
-          className="logo"
-          to="/"
-        >
-          SHOP.CO
-        </Link>
-
-
-        {/* NAVIGATION */}
-
-        <nav
-          className={`nav ${
-            menuOpen ? "open" : ""
-          }`}
-        >
-
-          <a href="#">
-            Shop
-            <ChevronDown size={16} />
-          </a>
-
-          <a href="#new">
-            On Sale
-          </a>
-
-          <a href="#new">
-            New Arrivals
-          </a>
-
-          <a href="#brands">
-            Brands
-          </a>
-
-        </nav>
-
-
-        {/* SEARCH */}
-
-        <div className="search-box">
-
-          <Search size={20} />
-
-          <input
-            type="text"
-            placeholder="Search for products..."
-          />
-
-        </div>
-
-
-        {/* ICONS */}
-
-        <div className="header-icons">
-
-          <Search className="mobile-only" />
-
-          <Link to="/cart">
-            <ShoppingCart />
-          </Link>
-
-          <UserRound />
-
-        </div>
-
-      </header>
-
-    </>
-  );
-}
 
 
 /* =====================================================
@@ -707,7 +595,7 @@ export default function Cart() {
   return (
     <div className="app">
 
-      <Header />
+     <Header/>
 
 
       <main className="page-shell main-content">

@@ -29,7 +29,7 @@ input {
     width: 100%;
     min-height: 100vh;
     background: #ffffff;
-    border-top: 10px solid #3b3142;
+    /* border-top: 10px solid #3b3142; */
 }
 
 .checkout-container {

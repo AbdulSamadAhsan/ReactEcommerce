@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 
 import "./Shop.css";
+import Header from "./Header";
+import Footer from "./Footer";
 
 const products = [
   {
@@ -24,6 +26,10 @@ const products = [
     image: "/assets/related-2.jpg",
     rating: 3.5,
     price: 145,
+    category: "T-shirts",
+    style: "Casual",
+    color: "#000000",
+    sizes: ["Small", "Medium", "Large"],
   },
   {
     id: 2,
@@ -31,6 +37,10 @@ const products = [
     image: "/assets/related-3.jpg",
     rating: 4.5,
     price: 180,
+    category: "Shirts",
+    style: "Casual",
+    color: "#ffffff",
+    sizes: ["Medium", "Large", "X-Large"],
   },
   {
     id: 3,
@@ -40,6 +50,10 @@ const products = [
     price: 120,
     oldPrice: 150,
     discount: 30,
+    category: "T-shirts",
+    style: "Party",
+    color: "#000000",
+    sizes: ["Small", "Medium", "Large"],
   },
   {
     id: 4,
@@ -49,6 +63,10 @@ const products = [
     price: 240,
     oldPrice: 260,
     discount: 20,
+    category: "Jeans",
+    style: "Casual",
+    color: "#063af5",
+    sizes: ["Medium", "Large", "X-Large"],
   },
   {
     id: 5,
@@ -56,6 +74,10 @@ const products = [
     image: "/assets/main-shirt.jpg",
     rating: 4.5,
     price: 180,
+    category: "Shirts",
+    style: "Formal",
+    color: "#f50606",
+    sizes: ["Small", "Medium", "Large"],
   },
   {
     id: 6,
@@ -65,6 +87,10 @@ const products = [
     price: 130,
     oldPrice: 160,
     discount: 20,
+    category: "T-shirts",
+    style: "Gym",
+    color: "#06caf5",
+    sizes: ["X-Small", "Small", "Medium"],
   },
   {
     id: 7,
@@ -74,6 +100,10 @@ const products = [
     price: 212,
     oldPrice: 232,
     discount: 20,
+    category: "Shirts",
+    style: "Formal",
+    color: "#ffffff",
+    sizes: ["Large", "X-Large", "XX-Large"],
   },
   {
     id: 8,
@@ -81,6 +111,10 @@ const products = [
     image: "/assets/party.jpg",
     rating: 4,
     price: 145,
+    category: "T-shirts",
+    style: "Party",
+    color: "#7d06f5",
+    sizes: ["Medium", "Large"],
   },
   {
     id: 9,
@@ -88,6 +122,10 @@ const products = [
     image: "/assets/gym.jpg",
     rating: 3,
     price: 80,
+    category: "Shorts",
+    style: "Gym",
+    color: "#00c12b",
+    sizes: ["Small", "Medium", "Large"],
   },
 ];
 
@@ -116,6 +154,9 @@ const sizes = [
   "4X-Large",
 ];
 
+const PRICE_MIN = 0;
+const PRICE_MAX = 300;
+
 function Rating({ value }) {
   const fullStars = Math.floor(value);
 
@@ -139,9 +180,91 @@ function Rating({ value }) {
   );
 }
 
-function FilterContent({ closeMobile }) {
-  const [selectedColor, setSelectedColor] = useState("#063af5");
-  const [selectedSize, setSelectedSize] = useState("Large");
+function FilterContent({
+  closeMobile,
+
+  selectedColor,
+  setSelectedColor,
+
+  selectedSize,
+  setSelectedSize,
+
+  selectedCategory,
+  setSelectedCategory,
+
+  selectedStyle,
+  setSelectedStyle,
+
+  minPrice,
+  maxPrice,
+  setMinPrice,
+  setMaxPrice,
+
+  setPriceDragging,
+
+  applyFilters,
+  clearFilters,
+}) {
+  const handlePriceMouseDown = (event, type) => {
+    event.stopPropagation();
+
+    setPriceDragging(type);
+  };
+
+  const handleTrackMouseDown = (event) => {
+    const track = event.currentTarget;
+
+    const rect = track.getBoundingClientRect();
+
+    let percentage =
+      (event.clientX - rect.left) / rect.width;
+
+    percentage = Math.max(
+      0,
+      Math.min(1, percentage)
+    );
+
+    const value = Math.round(
+      PRICE_MIN +
+        percentage *
+          (PRICE_MAX - PRICE_MIN)
+    );
+
+    const distanceFromMin = Math.abs(
+      value - minPrice
+    );
+
+    const distanceFromMax = Math.abs(
+      value - maxPrice
+    );
+
+    if (
+      distanceFromMin <=
+      distanceFromMax
+    ) {
+      setMinPrice(
+        Math.min(value, maxPrice - 1)
+      );
+
+      setPriceDragging("min");
+    } else {
+      setMaxPrice(
+        Math.max(value, minPrice + 1)
+      );
+
+      setPriceDragging("max");
+    }
+  };
+
+  const minPercentage =
+    ((minPrice - PRICE_MIN) /
+      (PRICE_MAX - PRICE_MIN)) *
+    100;
+
+  const maxPercentage =
+    ((maxPrice - PRICE_MIN) /
+      (PRICE_MAX - PRICE_MIN)) *
+    100;
 
   return (
     <div className="shop-filter-content">
@@ -163,14 +286,33 @@ function FilterContent({ closeMobile }) {
       <div className="shop-filter-divider" />
 
       <div className="shop-filter-links">
-        {["T-shirts", "Shorts", "Shirts", "Hoodie", "Jeans"].map(
-          (item) => (
-            <button key={item}>
-              <span>{item}</span>
-              <ChevronRight size={17} />
-            </button>
-          )
-        )}
+        {[
+          "T-shirts",
+          "Shorts",
+          "Shirts",
+          "Hoodie",
+          "Jeans",
+        ].map((item) => (
+          <button
+            key={item}
+            className={
+              selectedCategory === item
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setSelectedCategory(
+                selectedCategory === item
+                  ? ""
+                  : item
+              )
+            }
+          >
+            <span>{item}</span>
+
+            <ChevronRight size={17} />
+          </button>
+        ))}
       </div>
 
       <div className="shop-filter-divider" />
@@ -178,21 +320,64 @@ function FilterContent({ closeMobile }) {
       <div className="shop-filter-section">
         <div className="shop-filter-section-heading">
           <strong>Price</strong>
+
           <ChevronUp size={18} />
         </div>
 
         <div className="shop-price-filter">
-          <div className="shop-price-track">
-            <div className="shop-price-active" />
 
-            <span className="shop-price-dot shop-price-left" />
-            <span className="shop-price-dot shop-price-right" />
+          {/* Existing price track */}
+          <div
+            className="shop-price-track"
+            onMouseDown={handleTrackMouseDown}
+          >
+            {/* Existing active element */}
+            <div
+              className="shop-price-active"
+              style={{
+                left: `${minPercentage}%`,
+                right: `${100 - maxPercentage}%`,
+              }}
+            />
+
+            {/* Existing left dot */}
+            <span
+              className="shop-price-dot shop-price-left"
+              style={{
+                left: `${minPercentage}%`,
+                cursor: "grab",
+              }}
+              onMouseDown={(event) =>
+                handlePriceMouseDown(
+                  event,
+                  "min"
+                )
+              }
+            />
+
+            {/* Existing right dot */}
+            <span
+              className="shop-price-dot shop-price-right"
+              style={{
+                left: `${maxPercentage}%`,
+                cursor: "grab",
+              }}
+              onMouseDown={(event) =>
+                handlePriceMouseDown(
+                  event,
+                  "max"
+                )
+              }
+            />
           </div>
 
+          {/* Existing price values */}
           <div className="shop-price-values">
-            <span>$50</span>
-            <span>$200</span>
+            <span>${minPrice}</span>
+
+            <span>${maxPrice}</span>
           </div>
+
         </div>
       </div>
 
@@ -201,6 +386,7 @@ function FilterContent({ closeMobile }) {
       <div className="shop-filter-section">
         <div className="shop-filter-section-heading">
           <strong>Colors</strong>
+
           <ChevronUp size={18} />
         </div>
 
@@ -212,7 +398,13 @@ function FilterContent({ closeMobile }) {
               style={{
                 backgroundColor: color,
               }}
-              onClick={() => setSelectedColor(color)}
+              onClick={() =>
+                setSelectedColor(
+                  selectedColor === color
+                    ? ""
+                    : color
+                )
+              }
             >
               {selectedColor === color && (
                 <Check
@@ -235,6 +427,7 @@ function FilterContent({ closeMobile }) {
       <div className="shop-filter-section">
         <div className="shop-filter-section-heading">
           <strong>Size</strong>
+
           <ChevronUp size={18} />
         </div>
 
@@ -243,9 +436,17 @@ function FilterContent({ closeMobile }) {
             <button
               key={size}
               className={
-                selectedSize === size ? "active" : ""
+                selectedSize === size
+                  ? "active"
+                  : ""
               }
-              onClick={() => setSelectedSize(size)}
+              onClick={() =>
+                setSelectedSize(
+                  selectedSize === size
+                    ? ""
+                    : size
+                )
+              }
             >
               {size}
             </button>
@@ -258,114 +459,565 @@ function FilterContent({ closeMobile }) {
       <div className="shop-filter-section">
         <div className="shop-filter-section-heading">
           <strong>Dress Style</strong>
+
           <ChevronUp size={18} />
         </div>
 
         <div className="shop-filter-links shop-dress-links">
-          {["Casual", "Formal", "Party", "Gym"].map(
-            (item) => (
-              <button key={item}>
-                <span>{item}</span>
-                <ChevronRight size={17} />
-              </button>
-            )
-          )}
+          {[
+            "Casual",
+            "Formal",
+            "Party",
+            "Gym",
+          ].map((item) => (
+            <button
+              key={item}
+              className={
+                selectedStyle === item
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setSelectedStyle(
+                  selectedStyle === item
+                    ? ""
+                    : item
+                )
+              }
+            >
+              <span>{item}</span>
+
+              <ChevronRight size={17} />
+            </button>
+          ))}
         </div>
       </div>
 
       <button
         className="shop-apply-filter"
-        onClick={() => closeMobile && closeMobile()}
+        onClick={() => {
+          applyFilters();
+
+          if (closeMobile) {
+            closeMobile();
+          }
+        }}
       >
         Apply Filter
+      </button>
+
+      <button
+        type="button"
+        onClick={clearFilters}
+        style={{
+          width: "100%",
+          marginTop: "10px",
+          padding: "10px",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Clear Filters
       </button>
     </div>
   );
 }
 
-function FooterColumn({ title, links }) {
-  return (
-    <div className="shop-footer-column">
-      <h4>{title}</h4>
+function SortDropdown({
+  sortBy,
+  setSortBy,
+  sortOpen,
+  setSortOpen,
+}) {
+  const options = [
+    {
+      value: "popular",
+      label: "Most Popular",
+    },
+    {
+      value: "rating",
+      label: "Top Rated",
+    },
+    {
+      value: "price-low",
+      label: "Price Low to High",
+    },
+    {
+      value: "price-high",
+      label: "Price High to Low",
+    },
+    {
+      value: "name",
+      label: "Name A-Z",
+    },
+  ];
 
-      {links.map((link) => (
-        <a href="#" key={link}>
-          {link}
-        </a>
-      ))}
+  const currentLabel =
+    options.find(
+      (option) =>
+        option.value === sortBy
+    )?.label || "Most Popular";
+
+  return (
+    <div
+      className="shop-sort-text"
+      style={{
+        position: "relative",
+        cursor: "pointer",
+      }}
+      onClick={() =>
+        setSortOpen(!sortOpen)
+      }
+    >
+      Sort by:
+
+      <strong>
+        {currentLabel}
+      </strong>
+
+      <ChevronDown size={15} />
+
+      {sortOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "25px",
+            right: 0,
+            minWidth: "180px",
+            background: "#fff",
+            border: "1px solid #eee",
+            borderRadius: "8px",
+            padding: "6px",
+            zIndex: 100,
+            boxShadow:
+              "0 8px 20px rgba(0,0,0,0.12)",
+          }}
+          onClick={(event) =>
+            event.stopPropagation()
+          }
+        >
+          {options.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => {
+                setSortBy(option.value);
+                setSortOpen(false);
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                padding: "9px 10px",
+                border: "none",
+                background:
+                  sortBy === option.value
+                    ? "#f5f5f5"
+                    : "transparent",
+                textAlign: "left",
+                cursor: "pointer",
+                borderRadius: "5px",
+              }}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 export default function Shop() {
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [filterOpen, setFilterOpen] =
+    useState(false);
+
+  const [mobileMenuOpen, setMobileMenuOpen] =
+    useState(false);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Filters
+  |--------------------------------------------------------------------------
+  */
+
+  const [selectedColor, setSelectedColor] =
+    useState("");
+
+  const [selectedSize, setSelectedSize] =
+    useState("");
+
+  const [selectedCategory, setSelectedCategory] =
+    useState("");
+
+  const [selectedStyle, setSelectedStyle] =
+    useState("");
+
+  /*
+  |--------------------------------------------------------------------------
+  | Price
+  |--------------------------------------------------------------------------
+  */
+
+  const [minPrice, setMinPrice] =
+    useState(50);
+
+  const [maxPrice, setMaxPrice] =
+    useState(200);
+
+  const [priceDragging, setPriceDragging] =
+    useState(null);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Applied filters
+  |--------------------------------------------------------------------------
+  */
+
+  const [appliedFilters, setAppliedFilters] =
+    useState({
+      color: "",
+      size: "",
+      category: "",
+      style: "",
+      minPrice: 50,
+      maxPrice: 200,
+    });
+
+  /*
+  |--------------------------------------------------------------------------
+  | Sorting
+  |--------------------------------------------------------------------------
+  */
+
+  const [sortBy, setSortBy] =
+    useState("popular");
+
+  const [sortOpen, setSortOpen] =
+    useState(false);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Pagination
+  |--------------------------------------------------------------------------
+  */
+
+  const [currentPage, setCurrentPage] =
+    useState(1);
+
+  const productsPerPage = 6;
+
+  /*
+  |--------------------------------------------------------------------------
+  | Price dragging
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    if (!priceDragging) {
+      return;
+    }
+
+    const handleMouseMove = (event) => {
+      const track =
+        document.querySelector(
+          ".shop-price-track"
+        );
+
+      if (!track) {
+        return;
+      }
+
+      const rect =
+        track.getBoundingClientRect();
+
+      let percentage =
+        (event.clientX - rect.left) /
+        rect.width;
+
+      percentage = Math.max(
+        0,
+        Math.min(1, percentage)
+      );
+
+      const value = Math.round(
+        PRICE_MIN +
+          percentage *
+            (PRICE_MAX - PRICE_MIN)
+      );
+
+      if (priceDragging === "min") {
+        setMinPrice(
+          Math.min(
+            value,
+            maxPrice - 1
+          )
+        );
+      }
+
+      if (priceDragging === "max") {
+        setMaxPrice(
+          Math.max(
+            value,
+            minPrice + 1
+          )
+        );
+      }
+    };
+
+    const handleMouseUp = () => {
+      setPriceDragging(null);
+    };
+
+    document.addEventListener(
+      "mousemove",
+      handleMouseMove
+    );
+
+    document.addEventListener(
+      "mouseup",
+      handleMouseUp
+    );
+
+    return () => {
+      document.removeEventListener(
+        "mousemove",
+        handleMouseMove
+      );
+
+      document.removeEventListener(
+        "mouseup",
+        handleMouseUp
+      );
+    };
+  }, [
+    priceDragging,
+    minPrice,
+    maxPrice,
+  ]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Apply Filters
+  |--------------------------------------------------------------------------
+  */
+
+  const applyFilters = () => {
+    setAppliedFilters({
+      color: selectedColor,
+      size: selectedSize,
+      category: selectedCategory,
+      style: selectedStyle,
+      minPrice,
+      maxPrice,
+    });
+
+    setCurrentPage(1);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Clear Filters
+  |--------------------------------------------------------------------------
+  */
+
+  const clearFilters = () => {
+    setSelectedColor("");
+
+    setSelectedSize("");
+
+    setSelectedCategory("");
+
+    setSelectedStyle("");
+
+    setMinPrice(50);
+
+    setMaxPrice(200);
+
+    setAppliedFilters({
+      color: "",
+      size: "",
+      category: "",
+      style: "",
+      minPrice: 50,
+      maxPrice: 200,
+    });
+
+    setCurrentPage(1);
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Filter Products
+  |--------------------------------------------------------------------------
+  */
+
+  const filteredProducts = useMemo(() => {
+    let result = products.filter(
+      (product) => {
+        if (
+          appliedFilters.category &&
+          product.category !==
+            appliedFilters.category
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilters.style &&
+          product.style !==
+            appliedFilters.style
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilters.color &&
+          product.color !==
+            appliedFilters.color
+        ) {
+          return false;
+        }
+
+        if (
+          appliedFilters.size &&
+          !product.sizes.includes(
+            appliedFilters.size
+          )
+        ) {
+          return false;
+        }
+
+        if (
+          product.price <
+          appliedFilters.minPrice
+        ) {
+          return false;
+        }
+
+        if (
+          product.price >
+          appliedFilters.maxPrice
+        ) {
+          return false;
+        }
+
+        return true;
+      }
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sorting
+    |--------------------------------------------------------------------------
+    */
+
+    switch (sortBy) {
+      case "rating":
+        result.sort(
+          (a, b) =>
+            b.rating - a.rating
+        );
+        break;
+
+      case "price-low":
+        result.sort(
+          (a, b) =>
+            a.price - b.price
+        );
+        break;
+
+      case "price-high":
+        result.sort(
+          (a, b) =>
+            b.price - a.price
+        );
+        break;
+
+      case "name":
+        result.sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name
+            )
+        );
+        break;
+
+      default:
+        break;
+    }
+
+    return result;
+  }, [
+    appliedFilters,
+    sortBy,
+  ]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Pagination
+  |--------------------------------------------------------------------------
+  */
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(
+      filteredProducts.length /
+        productsPerPage
+    )
+  );
+
+  const startIndex =
+    (currentPage - 1) *
+    productsPerPage;
+
+  const currentProducts =
+    filteredProducts.slice(
+      startIndex,
+      startIndex + productsPerPage
+    );
+
+  /*
+  |--------------------------------------------------------------------------
+  | Page Navigation
+  |--------------------------------------------------------------------------
+  */
+
+  const changePage = (page) => {
+    if (
+      page < 1 ||
+      page > totalPages
+    ) {
+      return;
+    }
+
+    setCurrentPage(page);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Price percentages
+  |--------------------------------------------------------------------------
+  */
+
+  const minPricePercentage =
+    ((minPrice - PRICE_MIN) /
+      (PRICE_MAX - PRICE_MIN)) *
+    100;
+
+  const maxPricePercentage =
+    ((maxPrice - PRICE_MIN) /
+      (PRICE_MAX - PRICE_MIN)) *
+    100;
 
   return (
     <div className="shop-page">
-      <div className="shop-promo">
-        <span>
-          Sign up and get 20% off to your first order.{" "}
-          <u>Sign Up Now</u>
-        </span>
-
-        <X size={17} />
-      </div>
-
-      <header className="shop-header shop-shell">
-        <button
-          className="shop-mobile-menu-button"
-          onClick={() =>
-            setMobileMenuOpen((current) => !current)
-          }
-        >
-          {mobileMenuOpen ? (
-            <X size={23} />
-          ) : (
-            <Menu size={23} />
-          )}
-        </button>
-
-        <a href="/" className="shop-logo">
-          SHOP.CO
-        </a>
-
-        <nav
-          className={
-            mobileMenuOpen
-              ? "shop-nav shop-nav-open"
-              : "shop-nav"
-          }
-        >
-          <a href="#">
-            Shop
-            <ChevronDown size={14} />
-          </a>
-
-          <a href="#">On Sale</a>
-          <a href="#">New Arrivals</a>
-          <a href="#">Brands</a>
-        </nav>
-
-        <div className="shop-search">
-          <Search size={19} />
-
-          <input
-            type="text"
-            placeholder="Search for products..."
-          />
-        </div>
-
-        <div className="shop-header-icons">
-          <Search
-            className="shop-mobile-search"
-            size={21}
-          />
-
-          <ShoppingCart size={21} />
-          <UserRound size={21} />
-        </div>
-      </header>
+      <Header />
 
       <div className="shop-header-line shop-shell" />
 
@@ -375,207 +1027,381 @@ export default function Shop() {
 
           <ChevronRight size={15} />
 
-          <b>Casual</b>
+          <b>
+            {appliedFilters.category ||
+              "Casual"}
+          </b>
         </div>
 
         <div className="shop-main-layout">
+
+          {/* Sidebar */}
+
           <aside className="shop-sidebar">
-            <FilterContent />
+            <FilterContent
+              selectedColor={
+                selectedColor
+              }
+              setSelectedColor={
+                setSelectedColor
+              }
+
+              selectedSize={
+                selectedSize
+              }
+              setSelectedSize={
+                setSelectedSize
+              }
+
+              selectedCategory={
+                selectedCategory
+              }
+              setSelectedCategory={
+                setSelectedCategory
+              }
+
+              selectedStyle={
+                selectedStyle
+              }
+              setSelectedStyle={
+                setSelectedStyle
+              }
+
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+
+              setMinPrice={
+                setMinPrice
+              }
+              setMaxPrice={
+                setMaxPrice
+              }
+
+              setPriceDragging={
+                setPriceDragging
+              }
+
+              applyFilters={
+                applyFilters
+              }
+
+              clearFilters={
+                clearFilters
+              }
+            />
           </aside>
 
+          {/* Products */}
+
           <section className="shop-products-section">
+
             <div className="shop-products-top">
-              <h1>Casual</h1>
+              <h1>
+                {appliedFilters.category ||
+                  "Casual"}
+              </h1>
 
               <div className="shop-sort">
+
                 <span className="shop-results-text">
-                  Showing 1-10 of 100 Products
+                  {filteredProducts.length ===
+                  0
+                    ? "Showing 0 Products"
+                    : `Showing ${
+                        startIndex + 1
+                      }-${Math.min(
+                        startIndex +
+                          currentProducts.length,
+                        filteredProducts.length
+                      )} of ${
+                        filteredProducts.length
+                      } Products`}
                 </span>
 
-                <span className="shop-sort-text">
-                  Sort by:
-                  <strong>Most Popular</strong>
-                  <ChevronDown size={15} />
-                </span>
+                <SortDropdown
+                  sortBy={sortBy}
+                  setSortBy={
+                    setSortBy
+                  }
+                  sortOpen={
+                    sortOpen
+                  }
+                  setSortOpen={
+                    setSortOpen
+                  }
+                />
 
                 <button
                   className="shop-mobile-filter-button"
-                  onClick={() => setFilterOpen(true)}
+                  onClick={() =>
+                    setFilterOpen(
+                      true
+                    )
+                  }
                 >
-                  <SlidersHorizontal size={20} />
+                  <SlidersHorizontal
+                    size={20}
+                  />
                 </button>
               </div>
             </div>
 
+            {/* Product Grid */}
+
             <div className="shop-products-grid">
-              {products.map((product) => (
-                <article
-                  className="shop-product-card"
-                  key={product.id}
-                >
-                  <div className="shop-product-image">
-                    <img
-                      src={product.image}
-                      alt={product.name}
+              {currentProducts.map(
+                (product) => (
+                  <article
+                    className="shop-product-card"
+                    key={product.id}
+                  >
+                    <div className="shop-product-image">
+                      <img
+                        src={
+                          product.image
+                        }
+                        alt={
+                          product.name
+                        }
+                      />
+                    </div>
+
+                    <h3>
+                      {product.name}
+                    </h3>
+
+                    <Rating
+                      value={
+                        product.rating
+                      }
                     />
-                  </div>
 
-                  <h3>{product.name}</h3>
+                    <div className="shop-product-price">
+                      <strong>
+                        ${product.price}
+                      </strong>
 
-                  <Rating value={product.rating} />
+                      {product.oldPrice && (
+                        <del>
+                          $
+                          {
+                            product.oldPrice
+                          }
+                        </del>
+                      )}
 
-                  <div className="shop-product-price">
-                    <strong>${product.price}</strong>
+                      {product.discount && (
+                        <span className="shop-discount">
+                          -
+                          {
+                            product.discount
+                          }
+                          %
+                        </span>
+                      )}
+                    </div>
+                  </article>
+                )
+              )}
 
-                    {product.oldPrice && (
-                      <del>
-                        ${product.oldPrice}
-                      </del>
-                    )}
+              {currentProducts.length ===
+                0 && (
+                <div
+                  style={{
+                    gridColumn:
+                      "1 / -1",
+                    textAlign:
+                      "center",
+                    padding:
+                      "40px",
+                  }}
+                >
+                  <h3>
+                    No products found
+                  </h3>
 
-                    {product.discount && (
-                      <span className="shop-discount">
-                        -{product.discount}%
-                      </span>
-                    )}
-                  </div>
-                </article>
-              ))}
+                  <p>
+                    Try changing
+                    your filters.
+                  </p>
+
+                  <button
+                    onClick={
+                      clearFilters
+                    }
+                    style={{
+                      cursor:
+                        "pointer",
+                      padding:
+                        "10px 20px",
+                      border:
+                        "none",
+                      borderRadius:
+                        "6px",
+                    }}
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="shop-pagination">
-              <button className="shop-page-nav">
-                <ArrowLeft size={16} />
-                <span>Previous</span>
-              </button>
+            {/* Pagination */}
 
-              <div className="shop-page-numbers">
-                <button className="active">1</button>
-                <button>2</button>
-                <button>3</button>
-                <button>...</button>
-                <button>8</button>
-                <button>9</button>
-                <button>10</button>
+            {filteredProducts.length >
+              0 && (
+              <div className="shop-pagination">
+
+                <button
+                  className="shop-page-nav"
+                  disabled={
+                    currentPage ===
+                    1
+                  }
+                  onClick={() =>
+                    changePage(
+                      currentPage - 1
+                    )
+                  }
+                >
+                  <ArrowLeft
+                    size={16}
+                  />
+
+                  <span>
+                    Previous
+                  </span>
+                </button>
+
+                <div className="shop-page-numbers">
+
+                  {Array.from(
+                    {
+                      length:
+                        totalPages,
+                    },
+                    (_, index) =>
+                      index + 1
+                  ).map((page) => (
+                    <button
+                      key={page}
+                      className={
+                        currentPage ===
+                        page
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() =>
+                        changePage(
+                          page
+                        )
+                      }
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                </div>
+
+                <button
+                  className="shop-page-nav"
+                  disabled={
+                    currentPage ===
+                    totalPages
+                  }
+                  onClick={() =>
+                    changePage(
+                      currentPage + 1
+                    )
+                  }
+                >
+                  <span>
+                    Next
+                  </span>
+
+                  <ArrowRight
+                    size={16}
+                  />
+                </button>
               </div>
+            )}
 
-              <button className="shop-page-nav">
-                <span>Next</span>
-                <ArrowRight size={16} />
-              </button>
-            </div>
           </section>
         </div>
       </main>
 
-      <section className="shop-newsletter shop-shell">
-        <h2>
-          STAY UP TO DATE ABOUT
-          <br />
-          OUR LATEST OFFERS
-        </h2>
+      <Footer />
 
-        <div className="shop-newsletter-form">
-          <label>
-            <Mail size={18} />
-
-            <input
-              type="email"
-              placeholder="Enter your email address"
-            />
-          </label>
-
-          <button>
-            Subscribe to Newsletter
-          </button>
-        </div>
-      </section>
-
-      <footer className="shop-footer">
-        <div className="shop-footer-grid shop-shell">
-          <div className="shop-footer-about">
-            <h2>SHOP.CO</h2>
-
-            <p>
-              We have clothes that suits your style and
-              which you're proud to wear. From women to
-              men.
-            </p>
-
-            <div className="shop-socials">
-              <button>𝕏</button>
-              <button>f</button>
-              <button>◎</button>
-              <button>G</button>
-            </div>
-          </div>
-
-          <FooterColumn
-            title="COMPANY"
-            links={[
-              "About",
-              "Features",
-              "Works",
-              "Career",
-            ]}
-          />
-
-          <FooterColumn
-            title="HELP"
-            links={[
-              "Customer Support",
-              "Delivery Details",
-              "Terms & Conditions",
-              "Privacy Policy",
-            ]}
-          />
-
-          <FooterColumn
-            title="FAQ"
-            links={[
-              "Account",
-              "Manage Deliveries",
-              "Orders",
-              "Payments",
-            ]}
-          />
-
-          <FooterColumn
-            title="RESOURCES"
-            links={[
-              "Free eBooks",
-              "Development Tutorial",
-              "How to - Blog",
-              "Youtube Playlist",
-            ]}
-          />
-        </div>
-
-        <div className="shop-footer-bottom shop-shell">
-          <span>
-            Shop.co © 2000-2025, All Rights Reserved
-          </span>
-
-          <div className="shop-payment-methods">
-            <b>VISA</b>
-            <b>●●</b>
-            <b>PayPal</b>
-            <b>Pay</b>
-            <b>G Pay</b>
-          </div>
-        </div>
-      </footer>
+      {/* Mobile Filter */}
 
       {filterOpen && (
         <>
           <div
             className="shop-filter-overlay"
-            onClick={() => setFilterOpen(false)}
+            onClick={() =>
+              setFilterOpen(
+                false
+              )
+            }
           />
 
           <aside className="shop-mobile-filter">
             <FilterContent
-              closeMobile={() => setFilterOpen(false)}
+              closeMobile={() =>
+                setFilterOpen(
+                  false
+                )
+              }
+
+              selectedColor={
+                selectedColor
+              }
+              setSelectedColor={
+                setSelectedColor
+              }
+
+              selectedSize={
+                selectedSize
+              }
+              setSelectedSize={
+                setSelectedSize
+              }
+
+              selectedCategory={
+                selectedCategory
+              }
+              setSelectedCategory={
+                setSelectedCategory
+              }
+
+              selectedStyle={
+                selectedStyle
+              }
+              setSelectedStyle={
+                setSelectedStyle
+              }
+
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+
+              setMinPrice={
+                setMinPrice
+              }
+              setMaxPrice={
+                setMaxPrice
+              }
+
+              setPriceDragging={
+                setPriceDragging
+              }
+
+              applyFilters={
+                applyFilters
+              }
+
+              clearFilters={
+                clearFilters
+              }
             />
           </aside>
         </>
