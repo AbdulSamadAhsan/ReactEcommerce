@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./productdetail.css";
 
 import {
@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   X
 } from "lucide-react";
-
+import Swal from "sweetalert2";
 import { useParams } from "react-router-dom";
 import Footer from "./Footer";
 
@@ -141,12 +141,20 @@ const [menuOpen, setMenuOpen] = useState(false);
       image:
         "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85",
     },
+  { id:5, name: 'T-shirt with Tape Details', price: 120, rating: 4.5,  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85' },
+  {id:6,  name: 'Skinny Fit Jeans', price: 240, oldPrice: 260, discount: '-20%', rating: 3.5, image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85' },
+  {id:7, name: 'Checkered Shirt', price: 180, rating: 4.5, image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85' },
+  {id:8, name: 'Sleeve Striped T-shirt', price: 130, oldPrice: 160, discount: '-30%', rating: 4.5, image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=900&q=85' },
+
+
   ];
 
   const product = products.find(
     (item) => item.id === Number(id)
   );
-
+     useEffect(()=>{
+      setSelectedImage(product.image);
+     },[]);
   if (!product) {
     return (
       <main className="shell">
@@ -186,7 +194,50 @@ const [menuOpen, setMenuOpen] = useState(false);
       value: "#313850",
     },
   ];
+ function addToCart(productData){
+   console.log(productData.name);
+   console.log(productData.id);
+   console.log(selectedColor);
+   console.log(selectedSize);
+     const cart = JSON.parse(localStorage.getItem("cart")) || [];
+const exists = cart.find((item) => {
+  return item.id === product.id && item.color===selectedColor && item.size===selectedSize;
+});
+  if (exists) {
+    exists.quantity =quantity;
+    exists.color=selectedColor;
+    exists.size=selectedSize;
+  
+     Swal.fire({
+      title: " Cart Updated!",
+      text: "This product quantity update in  your cart.",
+      icon: "success",
+      confirmButtonText: "OK"
+    });
 
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    return;
+  }
+    const newProduct = {
+    ...product,
+    quantity: quantity,
+    color:selectedColor,
+    size:selectedSize,
+  };
+
+  Swal.fire({
+    title: "Added!",
+    text: "Product added to cart successfully.",
+    icon: "success",
+    confirmButtonText: "OK"
+  });
+    
+  cart.push(newProduct);
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+ }
   const sizes = [
     "Small",
     "Medium",
@@ -397,7 +448,7 @@ const [menuOpen, setMenuOpen] = useState(false);
               </button>
             </div>
 
-            <button className="add">
+            <button className="add" onClick={() => addToCart(product)}>
               Add to Cart
             </button>
           </div>

@@ -6,6 +6,7 @@ import Home from './component/Home';
 import Cart from './component/Cart';
 import Shop from "./component/Shop";
 import ProductDetail from './component/ProductDetail';
+import Checkout from './component/Checkout';
 
 
 // function Home(){
@@ -33,6 +34,7 @@ function App() {
             <Route path="/cart" element={<Cart/>}/>
              <Route path="/shop" element={<Shop/>}/>
          <Route path="/products/:id" element={<ProductDetail />} />
+            { <Route path="*" element={<Checkout/>} />}
             {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
     );

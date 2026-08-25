@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 
 import {
   Search,
@@ -6,234 +7,815 @@ import {
   ChevronDown,
   Menu,
   X,
-  Star,
-  ArrowLeft,
   ArrowRight,
   Mail,
- Minus,
- Trash2 ,
+  Minus,
+  Trash2,
   Plus,
   Tag,
-} from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+} from "lucide-react";
+
 import "./Cart.css";
-import Footer from './Footer';
+import Footer from "./Footer";
 
-const cartItems = [
-  {
-    name: 'Gradient Graphic T-shirt',
-    size: 'Large',
-    color: 'White',
-    price: 145,
-    image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85',
-  },
-  {
-    name: 'Checked Shirt',
-    size: 'Medium',
-    color: 'Red',
-    price: 180,
-   image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85',
-  },
-  {
-    name: 'Skinny Fit Jeans',
-    size: 'Large',
-    color: 'Blue',
-    price: 240,
-  image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=900&q=85',
-  },
-]
+import { Link } from "react-router-dom";
+
+import Swal from "sweetalert2";
 
 
+/* =====================================================
+   CART ITEM COMPONENT
+===================================================== */
 
-function CartItem({ item }) {
+function CartItem({
+  item,
+  increaseQuantity,
+  decreaseQuantity,
+  deleteItem,
+}) {
   return (
     <div className="cart-item">
-      <img src={item.image} alt={item.name} className="product-image" />
+
+      {/* PRODUCT IMAGE */}
+
+      <img
+        src={item.image}
+        alt={item.name}
+        className="product-image"
+      />
+
+
+      {/* PRODUCT INFORMATION */}
 
       <div className="item-copy">
-        <div className="item-title">{item.name}</div>
-        <div className="item-meta"><span>Size:</span> {item.size}</div>
-        <div className="item-meta"><span>Color:</span> {item.color}</div>
-        <div className="item-price">${item.price}</div>
+
+        <div className="item-title">
+          {item.name}
+        </div>
+
+        <div className="item-meta">
+          <span>Size:</span> {item.size}
+        </div>
+
+        <div className="item-meta">
+          <span>Color:</span> {item.color}
+        </div>
+
+        <div className="item-price">
+          ${Number(item.price).toFixed(0)}
+        </div>
+
       </div>
 
-      <Trash2 className="trash" size={22} fill="#ff3333" color="#ff3333" strokeWidth={1.9} />
 
-      <div className="quantity-pill" aria-hidden="true">
-        <Minus size={18} />
-        <span>2</span>
-        <Plus size={18} />
+      {/* DELETE PRODUCT */}
+
+      <button
+        type="button"
+        className="delete-button"
+        aria-label={`Remove ${item.name} from cart`}
+        onClick={() =>
+          deleteItem(
+            item.id,
+            item.size,
+            item.color
+          )
+        }
+      >
+        <Trash2
+          className="trash"
+          size={22}
+          color="#ff3333"
+          strokeWidth={1.9}
+        />
+      </button>
+
+
+      {/* QUANTITY */}
+
+      <div className="quantity-pill">
+
+        <button
+          type="button"
+          className="quantity-button"
+          disabled={(item.quantity || 1) <= 1}
+          onClick={() =>
+            decreaseQuantity(
+              item.id,
+              item.size,
+              item.color
+            )
+          }
+        >
+          <Minus size={18} />
+        </button>
+
+
+        <span>
+          {item.quantity || 1}
+        </span>
+
+
+        <button
+          type="button"
+          className="quantity-button"
+          onClick={() =>
+            increaseQuantity(
+              item.id,
+              item.size,
+              item.color
+            )
+          }
+        >
+          <Plus size={18} />
+        </button>
+
       </div>
+
     </div>
-  )
+  );
 }
 
-function OrderSummary() {
+
+/* =====================================================
+   ORDER SUMMARY
+===================================================== */
+
+function OrderSummary({ cartItems }) {
+
+  /* SUBTOTAL */
+
+  const subtotal = cartItems.reduce(
+    (total, item) => {
+      return (
+        total +
+        Number(item.price) *
+          Number(item.quantity || 1)
+      );
+    },
+    0
+  );
+
+
+  /* 20% DISCOUNT */
+
+  const discount = subtotal * 0.2;
+
+
+  /* DELIVERY FEE */
+
+  const deliveryFee =
+    cartItems.length > 0 ? 15 : 0;
+
+
+  /* FINAL TOTAL */
+
+  const total =
+    subtotal - discount + deliveryFee;
+
+
   return (
     <aside className="summary-card">
-      <h2>Order Summary</h2>
+
+      <h2>
+        Order Summary
+      </h2>
+
+
+      {/* SUBTOTAL */}
 
       <div className="summary-row muted">
-        <span>Subtotal</span>
-        <strong>$565</strong>
+
+        <span>
+          Subtotal
+        </span>
+
+        <strong>
+          ${subtotal.toFixed(2)}
+        </strong>
+
       </div>
+
+
+      {/* DISCOUNT */}
+
       <div className="summary-row muted">
-        <span>Discount (-20%)</span>
-        <strong className="discount">-$113</strong>
+
+        <span>
+          Discount (-20%)
+        </span>
+
+        <strong className="discount">
+          -${discount.toFixed(2)}
+        </strong>
+
       </div>
+
+
+      {/* DELIVERY */}
+
       <div className="summary-row muted last-before-rule">
-        <span>Delivery Fee</span>
-        <strong>$15</strong>
+
+        <span>
+          Delivery Fee
+        </span>
+
+        <strong>
+          ${deliveryFee.toFixed(2)}
+        </strong>
+
       </div>
+
 
       <div className="summary-divider" />
 
+
+      {/* TOTAL */}
+
       <div className="summary-row total-row">
-        <span>Total</span>
-        <strong>$467</strong>
+
+        <span>
+          Total
+        </span>
+
+        <strong>
+          ${total.toFixed(2)}
+        </strong>
+
       </div>
+
+
+      {/* PROMO CODE */}
 
       <div className="promo-form">
+
         <div className="promo-input">
-          <Tag size={19} color="#8c8c8c" />
-          <span>Add promo code</span>
+
+          <Tag
+            size={19}
+            color="#8c8c8c"
+          />
+
+          <span>
+            Add promo code
+          </span>
+
         </div>
-        <button type="button">Apply</button>
+
+
+        <button type="button">
+          Apply
+        </button>
+
       </div>
 
-      <button className="checkout-button" type="button">
-        Go to Checkout <ArrowRight size={22} />
-      </button>
+
+      {/* CHECKOUT */}
+
+      {cartItems.length > 0 ? (
+
+        <Link
+          to="/checkout"
+          className="checkout-link"
+        >
+
+          <button
+            className="checkout-button"
+            type="button"
+          >
+
+            Go to Checkout
+
+            <ArrowRight size={22} />
+
+          </button>
+
+        </Link>
+
+      ) : (
+
+        <button
+          className="checkout-button"
+          type="button"
+          disabled
+        >
+
+          Go to Checkout
+
+          <ArrowRight size={22} />
+
+        </button>
+
+      )}
+
     </aside>
-  )
+  );
 }
+
+
+/* =====================================================
+   NEWSLETTER
+===================================================== */
 
 function Newsletter() {
   return (
     <section className="newsletter page-shell">
-      <div className="newsletter-title">STAY UPTO DATE ABOUT<br />OUR LATEST OFFERS</div>
-      <div className="newsletter-form">
-        <div className="email-field">
-          <Mail size={18} color="#8a8a8a" />
-          <span>Enter your email address</span>
-        </div>
-        <button type="button">Subscribe to Newsletter</button>
+
+      <div className="newsletter-title">
+
+        STAY UPTO DATE ABOUT
+        <br />
+        OUR LATEST OFFERS
+
       </div>
+
+
+      <div className="newsletter-form">
+
+        <div className="email-field">
+
+          <Mail
+            size={18}
+            color="#8a8a8a"
+          />
+
+          <span>
+            Enter your email address
+          </span>
+
+        </div>
+
+
+        <button type="button">
+          Subscribe to Newsletter
+        </button>
+
+      </div>
+
     </section>
-  )
+  );
 }
 
-// function Footer() {
-//   return (
-//     <footer className="footer">
-//       <Newsletter />
 
-//       <div className="page-shell footer-grid">
-//         <div className="brand-column">
-//           <div className="logo footer-logo">SHOP.CO</div>
-//           <p>We have clothes that suits your style and<br />which you’re proud to wear. From<br />women to men.</p>
-//           <div className="socials">
-//             {/* <span><Twitter size={14} /></span>
-//             <span className="dark"><Facebook size={14} fill="white" /></span>
-//             <span><Instagram size={14} /></span>
-//             <span><Github size={14} /></span> */}
-//           </div>
-//         </div>
+/* =====================================================
+   HEADER
+===================================================== */
 
-//         <div className="footer-column">
-//           <h4>COMPANY</h4>
-//           <a href="#">About</a>
-//           <a href="#">Features</a>
-//           <a href="#">Works</a>
-//           <a href="#">Career</a>
-//         </div>
-//         <div className="footer-column">
-//           <h4>HELP</h4>
-//           <a href="#">Customer Support</a>
-//           <a href="#">Delivery Details</a>
-//           <a href="#">Terms &amp; Conditions</a>
-//           <a href="#">Privacy Policy</a>
-//         </div>
-//         <div className="footer-column">
-//           <h4>FAQ</h4>
-//           <a href="#">Account</a>
-//           <a href="#">Manage Deliveries</a>
-//           <a href="#">Orders</a>
-//           <a href="#">Payments</a>
-//         </div>
-//         <div className="footer-column">
-//           <h4>RESOURCES</h4>
-//           <a href="#">Free eBooks</a>
-//           <a href="#">Development Tutorial</a>
-//           <a href="#">How to - Blog</a>
-//           <a href="#">Youtube Playlist</a>
-//         </div>
-//       </div>
+function Header() {
 
-//       <div className="page-shell footer-bottom">
-//         <div>Shop.co © 2000-2023, All Rights Reserved</div>
-//         <div className="payment-row">
-//           <span className="payment visa">VISA</span>
-//           <span className="payment">🔴🟠</span>
-//           <span className="payment paypal">PayPal</span>
-//           <span className="payment"> Pay</span>
-//           <span className="payment">G Pay</span>
-//         </div>
-//       </div>
-//     </footer>
-//   )
-// }
-  function Header(){
-    const [menuOpen, setMenuOpen] = useState(false);
-      const [reviewIndex, setReviewIndex] = useState(0);
-    return(
-      <>
- <div className="promo-bar">
-        <span>Sign up and get 20% off to your first order. <u>Sign Up Now</u></span>
+  const [menuOpen, setMenuOpen] =
+    useState(false);
+
+
+  return (
+    <>
+
+      {/* PROMO BAR */}
+
+      <div className="promo-bar">
+
+        <span>
+          Sign up and get 20% off to your first order.{" "}
+
+          <u>
+            Sign Up Now
+          </u>
+
+        </span>
+
         <X size={18} />
+
       </div>
 
+
+      {/* HEADER */}
+
       <header className="header shell">
-        <button className="icon-btn mobile-only" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu"><Menu /></button>
-        <a className="logo" href="#">SHOP.CO</a>
-        <nav className={`nav ${menuOpen ? 'open' : ''}`}>
-          <a href="#">Shop <ChevronDown size={16} /></a>
-          <a href="#new">On Sale</a>
-          <a href="#new">New Arrivals</a>
-          <a href="#brands">Brands</a>
+
+        <button
+          type="button"
+          className="icon-btn mobile-only"
+          onClick={() =>
+            setMenuOpen(!menuOpen)
+          }
+          aria-label="Toggle menu"
+        >
+          <Menu />
+        </button>
+
+
+        {/* LOGO */}
+
+        <Link
+          className="logo"
+          to="/"
+        >
+          SHOP.CO
+        </Link>
+
+
+        {/* NAVIGATION */}
+
+        <nav
+          className={`nav ${
+            menuOpen ? "open" : ""
+          }`}
+        >
+
+          <a href="#">
+            Shop
+            <ChevronDown size={16} />
+          </a>
+
+          <a href="#new">
+            On Sale
+          </a>
+
+          <a href="#new">
+            New Arrivals
+          </a>
+
+          <a href="#brands">
+            Brands
+          </a>
+
         </nav>
-        <div className="search-box"><Search size={20} /><input placeholder="Search for products..." /></div>
-        <div className="header-icons"><Search className="mobile-only" /><ShoppingCart /><UserRound /></div>
+
+
+        {/* SEARCH */}
+
+        <div className="search-box">
+
+          <Search size={20} />
+
+          <input
+            type="text"
+            placeholder="Search for products..."
+          />
+
+        </div>
+
+
+        {/* ICONS */}
+
+        <div className="header-icons">
+
+          <Search className="mobile-only" />
+
+          <Link to="/cart">
+            <ShoppingCart />
+          </Link>
+
+          <UserRound />
+
+        </div>
+
       </header>
-</>
-    )
-  }
-export default function App() {
+
+    </>
+  );
+}
+
+
+/* =====================================================
+   CART PAGE
+===================================================== */
+
+export default function Cart() {
+
+  /* ===================================================
+     LOAD CART FROM LOCAL STORAGE
+  =================================================== */
+
+  const [cartItems, setCartItems] =
+    useState(() => {
+
+      try {
+
+        const savedCart =
+          localStorage.getItem("cart");
+
+        return savedCart
+          ? JSON.parse(savedCart)
+          : [];
+
+      } catch (error) {
+
+        console.error(
+          "Unable to read cart:",
+          error
+        );
+
+        return [];
+
+      }
+
+    });
+
+
+  /* ===================================================
+     SAVE CART
+  =================================================== */
+
+  const saveCart = (updatedCart) => {
+
+    setCartItems(updatedCart);
+
+
+    if (updatedCart.length === 0) {
+
+      localStorage.removeItem("cart");
+
+    } else {
+
+      localStorage.setItem(
+        "cart",
+        JSON.stringify(updatedCart)
+      );
+
+    }
+
+  };
+
+
+  /* ===================================================
+     INCREASE QUANTITY
+  =================================================== */
+
+  const increaseQuantity = (
+    id,
+    size,
+    color
+  ) => {
+
+    const updatedCart =
+      cartItems.map((item) => {
+
+        const sameProduct =
+          item.id === id &&
+          item.size === size &&
+          item.color === color;
+
+
+        if (sameProduct) {
+
+          return {
+            ...item,
+
+            quantity:
+              Number(item.quantity || 1) + 1,
+          };
+
+        }
+
+
+        return item;
+
+      });
+
+
+    saveCart(updatedCart);
+
+  };
+
+
+  /* ===================================================
+     DECREASE QUANTITY
+  =================================================== */
+
+  const decreaseQuantity = (
+    id,
+    size,
+    color
+  ) => {
+
+    const updatedCart =
+      cartItems.map((item) => {
+
+        const sameProduct =
+          item.id === id &&
+          item.size === size &&
+          item.color === color;
+
+
+        if (
+          sameProduct &&
+          Number(item.quantity || 1) > 1
+        ) {
+
+          return {
+            ...item,
+
+            quantity:
+              Number(item.quantity || 1) - 1,
+          };
+
+        }
+
+
+        return item;
+
+      });
+
+
+    saveCart(updatedCart);
+
+  };
+
+
+  /* ===================================================
+     DELETE ITEM
+  =================================================== */
+
+  const deleteItem = async (
+    id,
+    size,
+    color
+  ) => {
+
+    /* SWEETALERT CONFIRMATION */
+
+    const result = await Swal.fire({
+
+      title: "Are you sure?",
+
+      text:
+        "Do you want to remove this product from your cart?",
+
+      icon: "warning",
+
+      showCancelButton: true,
+
+      confirmButtonText:
+        "Yes, delete it!",
+
+      cancelButtonText:
+        "Cancel",
+
+      reverseButtons: true,
+
+    });
+
+
+    /* CANCEL */
+
+    if (!result.isConfirmed) {
+      return;
+    }
+
+
+    /* REMOVE ONLY MATCHING VARIANT */
+
+    const updatedCart =
+      cartItems.filter((item) => {
+
+        const sameProduct =
+          item.id === id &&
+          item.size === size &&
+          item.color === color;
+
+
+        return !sameProduct;
+
+      });
+
+
+    /* UPDATE STATE + LOCALSTORAGE */
+
+    saveCart(updatedCart);
+
+
+    /* SUCCESS MESSAGE */
+
+    await Swal.fire({
+
+      title: "Deleted!",
+
+      text:
+        "Product removed from your cart.",
+
+      icon: "success",
+
+      timer: 1500,
+
+      showConfirmButton: false,
+
+    });
+
+  };
+
+
+  /* ===================================================
+     UI
+  =================================================== */
+
   return (
     <div className="app">
+
       <Header />
 
+
       <main className="page-shell main-content">
+
+
+        {/* BREADCRUMB */}
+
         <div className="breadcrumb">
-          <span>Home</span>
-          {/* <ChevronRight size={18} /> */}
-          <span className="active">Cart</span>
+
+          <Link to="/">
+            Home
+          </Link>
+
+          <span className="active">
+            Cart
+          </span>
+
         </div>
 
-        <h1>YOUR CART</h1>
+
+        {/* TITLE */}
+
+        <h1>
+          YOUR CART
+        </h1>
+
 
         <div className="cart-layout">
+
+
+          {/* ===========================================
+              CART PRODUCTS
+          =========================================== */}
+
           <section className="cart-card">
-            {cartItems.map((item) => (
-              <CartItem key={item.name} item={item} />
-            ))}
+
+            {cartItems.length === 0 ? (
+
+              <div className="empty-cart">
+
+                <h2>
+                  Your cart is empty
+                </h2>
+
+                <p>
+                  Add some products to your cart.
+                </p>
+
+                <Link
+                  to="/"
+                  className="continue-shopping"
+                >
+                  Continue Shopping
+                </Link>
+
+              </div>
+
+            ) : (
+
+              cartItems.map((item) => (
+
+                <CartItem
+
+                  key={`${item.id}-${item.size}-${item.color}`}
+
+                  item={item}
+
+                  increaseQuantity={
+                    increaseQuantity
+                  }
+
+                  decreaseQuantity={
+                    decreaseQuantity
+                  }
+
+                  deleteItem={
+                    deleteItem
+                  }
+
+                />
+
+              ))
+
+            )}
+
           </section>
 
-          <OrderSummary />
+
+          {/* ===========================================
+              ORDER SUMMARY
+          =========================================== */}
+
+          <OrderSummary
+            cartItems={cartItems}
+          />
+
         </div>
+
       </main>
 
-    <Footer/>
+
+      <Footer />
+
     </div>
-  )
+  );
 }
