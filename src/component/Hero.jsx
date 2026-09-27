@@ -47,7 +47,7 @@ useEffect(() => {
       try {
 
    const response = await fetch(
-        `https://ecommerceapi-three.vercel.app/api/products`
+        `${import.meta.env.VITE_API_URL}/products`
       );
 
         const result = await response.json();
