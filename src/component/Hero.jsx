@@ -34,12 +34,8 @@ const reviews = [
 
 export default function Hero() {
     const [products, setProducts] = useState([]);
-const [topSelling,setTopSellings] = useState([
-  { id:1,  name: 'Vertical Striped Shirt', price: 212, oldPrice: 232, discount: '-20%', rating: 5, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&q=85' },
-  { id:2, name: 'Courage Graphic T-shirt', price: 145, rating: 4, image: 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=900&q=85' },
-  { id:3, name: 'Loose Fit Bermuda Shorts', price: 80, rating: 3, image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=900&q=85' },
-  { id:4 ,name: 'Faded Skinny Jeans', price: 210, rating: 4.5, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85' },
-]);
+      const [loading, setLoading] = useState(true);
+const [topSelling,setTopSellings] = useState([]);
 
 useEffect(() => {
 
@@ -64,7 +60,7 @@ useEffect(() => {
 
       } finally {
 
-    
+        setLoading(false);
       }
     };
 
@@ -79,6 +75,23 @@ useEffect(() => {
     for (let i = 0; i < 3; i += 1) arr.push(reviews[(reviewIndex + i) % reviews.length]);
     return arr;
   }, [reviewIndex]);
+
+ if (loading) {
+    return (
+      <>
+        
+
+        <main className="shell">
+          <div className="not-found">
+            Loading Product...
+          </div>
+        </main>
+
+        
+      </>
+    );
+  }
+
   return (
     <>
      <main>
