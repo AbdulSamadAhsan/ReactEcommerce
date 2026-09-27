@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState,useEffect } from 'react';
 import ProductCard from './ProductCard';
 import { Link } from "react-router-dom";
 import {
@@ -22,13 +22,8 @@ const newArrivals = [
   {id:7, name: 'Checkered Shirt', price: 180, rating: 4.5, image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85' },
   {id:8, name: 'Sleeve Striped T-shirt', price: 130, oldPrice: 160, discount: '-30%', rating: 4.5, image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=900&q=85' },
 ];
+    
 
-const topSelling = [
-  { id:1,  name: 'Vertical Striped Shirt', price: 212, oldPrice: 232, discount: '-20%', rating: 5, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&q=85' },
-  { id:2, name: 'Courage Graphic T-shirt', price: 145, rating: 4, image: 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=900&q=85' },
-  { id:3, name: 'Loose Fit Bermuda Shorts', price: 80, rating: 3, image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=900&q=85' },
-  { id:4 ,name: 'Faded Skinny Jeans', price: 210, rating: 4.5, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85' },
-];
 const reviews = [
   ['Sarah M.', 'I’m blown away by the quality and style of the clothes I received from Shop.co. From casual wear to elegant dresses, every piece has exceeded my expectations.'],
   ['Alex K.', 'Finding clothes that align with my personal style used to be a challenge until I discovered Shop.co. The range is genuinely impressive.'],
@@ -38,6 +33,46 @@ const reviews = [
 
 
 export default function Hero() {
+    const [products, setProducts] = useState([]);
+const [topSelling,setTopSellings] = useState([
+  { id:1,  name: 'Vertical Striped Shirt', price: 212, oldPrice: 232, discount: '-20%', rating: 5, image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&q=85' },
+  { id:2, name: 'Courage Graphic T-shirt', price: 145, rating: 4, image: 'https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=900&q=85' },
+  { id:3, name: 'Loose Fit Bermuda Shorts', price: 80, rating: 3, image: 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=900&q=85' },
+  { id:4 ,name: 'Faded Skinny Jeans', price: 210, rating: 4.5, image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85' },
+]);
+
+useEffect(() => {
+
+    const fetchApiProducts = async () => {
+      try {
+
+   const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/products`
+      );
+
+        const result = await response.json();
+          console.log(result);
+        if (!response.ok) {
+          throw new Error(result.message || "Failed to fetch products");
+        }
+         setTopSellings(result.data);
+        setProducts(result.data);
+
+      } catch (error) {
+
+        console.log(error.message);
+
+      } finally {
+
+    
+      }
+    };
+
+    fetchApiProducts();
+
+  }, []);
+
+
       const [reviewIndex, setReviewIndex] = useState(0);
         const visibleReviews = useMemo(() => {
     const arr = [];

@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import "./productdetail.css";
 
 import {
-  
   ChevronRight,
-    UserRound,
+  UserRound,
   ChevronDown,
   Minus,
   Plus,
-    Menu,
-    Search,
+  Menu,
+  Search,
   ShoppingCart,
   X
 } from "lucide-react";
+
 import Swal from "sweetalert2";
 import { useParams } from "react-router-dom";
 import Footer from "./Footer";
@@ -29,14 +29,25 @@ const relatedThree = "/assets/related-3.jpg";
 const relatedFour = "/assets/related-4.jpg";
 
 export default function ProductDetail() {
+
   const { id } = useParams();
+
+  console.log(id);
 
   const [selectedImage, setSelectedImage] = useState(mainImage);
   const [selectedColor, setSelectedColor] = useState("olive");
   const [selectedSize, setSelectedSize] = useState("Large");
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("reviews");
-const [menuOpen, setMenuOpen] = useState(false);
+
+  // API products
+  const [products, setProducts] = useState([]);
+
+  // NEW: loading state
+  const [loading, setLoading] = useState(true);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const reviews = [
     {
       name: "Samantha D.",
@@ -107,69 +118,131 @@ const [menuOpen, setMenuOpen] = useState(false);
     },
   ];
 
-  const products = [
-    {
-      id: 1,
-      name: "Vertical Striped Shirt",
-      price: 212,
-      oldPrice: 232,
-      discount: "-20%",
-      rating: 5,
-      image:
-        "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-      id: 2,
-      name: "Courage Graphic T-shirt",
-      price: 145,
-      rating: 4,
-      image:
-        "https://images.unsplash.com/photo-1503341504253-dff4815485f1?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-      id: 3,
-      name: "Loose Fit Bermuda Shorts",
-      price: 80,
-      rating: 3,
-      image:
-        "https://images.unsplash.com/photo-1591195853828-11db59a44f6b?auto=format&fit=crop&w=900&q=85",
-    },
-    {
-      id: 4,
-      name: "Faded Skinny Jeans",
-      price: 210,
-      rating: 4.5,
-      image:
-        "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=900&q=85",
-    },
-  { id:5, name: 'T-shirt with Tape Details', price: 120, rating: 4.5,  image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85' },
-  {id:6,  name: 'Skinny Fit Jeans', price: 240, oldPrice: 260, discount: '-20%', rating: 3.5, image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85' },
-  {id:7, name: 'Checkered Shirt', price: 180, rating: 4.5, image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85' },
-  {id:8, name: 'Sleeve Striped T-shirt', price: 130, oldPrice: 160, discount: '-30%', rating: 4.5, image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=900&q=85' },
+  /*
+  |--------------------------------------------------------------------------
+  | Fetch products from Node API
+  |--------------------------------------------------------------------------
+  */
 
+  useEffect(() => {
 
-  ];
+    const fetchApiProducts = async () => {
+
+      try {
+
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/products`
+        );
+
+        const result = await response.json();
+
+        console.log(result);
+
+        if (!response.ok) {
+          throw new Error(
+            result.message || "Failed to fetch products"
+          );
+        }
+
+        setProducts(result.data);
+
+      } catch (error) {
+
+        console.log(error.message);
+
+      } finally {
+
+        setLoading(false);
+
+      }
+    };
+
+    fetchApiProducts();
+
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Find product
+  |--------------------------------------------------------------------------
+  |
+  | MongoDB _id is a string/ObjectId.
+  | Do NOT convert route id using Number(id).
+  |
+  */
 
   const product = products.find(
-    (item) => item.id === Number(id)
+    (item) => item._id === id
   );
-     useEffect(()=>{
+
+  /*
+  |--------------------------------------------------------------------------
+  | Set image after API product becomes available
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+
+    if (product?.image) {
       setSelectedImage(product.image);
-     },[]);
-  if (!product) {
+    }
+
+  }, [product]);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Loading
+  |--------------------------------------------------------------------------
+  */
+
+  if (loading) {
     return (
-      <main className="shell">
-        <div className="not-found">
-          Product Not Found
-        </div>
-      </main>
+      <>
+        <Header />
+
+        <main className="shell">
+          <div className="not-found">
+            Loading Product...
+          </div>
+        </main>
+
+        <Footer />
+      </>
     );
   }
 
+  /*
+  |--------------------------------------------------------------------------
+  | Product not found
+  |--------------------------------------------------------------------------
+  */
+
+  if (!product) {
+    return (
+      <>
+        <Header />
+
+        <main className="shell">
+          <div className="not-found">
+            Product Not Found
+          </div>
+        </main>
+
+        <Footer />
+      </>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | Thumbnails
+  |--------------------------------------------------------------------------
+  */
+
   const thumbnails = [
     {
-      thumbnail: thumbFront,
-      fullImage: mainImage,
+      thumbnail: product.image || thumbFront,
+      fullImage: product.image || mainImage,
     },
     {
       thumbnail: thumbBack,
@@ -195,50 +268,76 @@ const [menuOpen, setMenuOpen] = useState(false);
       value: "#313850",
     },
   ];
- function addToCart(productData){
-   console.log(productData.name);
-   console.log(productData.id);
-   console.log(selectedColor);
-   console.log(selectedSize);
-     const cart = JSON.parse(localStorage.getItem("cart")) || [];
-const exists = cart.find((item) => {
-  return item.id === product.id && item.color===selectedColor && item.size===selectedSize;
-});
-  if (exists) {
-    exists.quantity =quantity;
-    exists.color=selectedColor;
-    exists.size=selectedSize;
-  
-     Swal.fire({
-      title: " Cart Updated!",
-      text: "This product quantity update in  your cart.",
+
+  /*
+  |--------------------------------------------------------------------------
+  | Add to cart
+  |--------------------------------------------------------------------------
+  */
+
+  function addToCart(productData) {
+
+    console.log(productData.name);
+    console.log(productData._id);
+    console.log(selectedColor);
+    console.log(selectedSize);
+
+    const cart =
+      JSON.parse(localStorage.getItem("cart")) || [];
+
+    const exists = cart.find((item) => {
+
+      return (
+        item._id === product._id &&
+        item.color === selectedColor &&
+        item.size === selectedSize
+      );
+
+    });
+
+    if (exists) {
+
+      exists.quantity = quantity;
+      exists.color = selectedColor;
+      exists.size = selectedSize;
+
+      Swal.fire({
+        title: "Cart Updated!",
+        text: "This product quantity update in your cart.",
+        icon: "success",
+        confirmButtonText: "OK"
+      });
+
+      localStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+      );
+
+      return;
+    }
+
+    const newProduct = {
+      ...product,
+      quantity: quantity,
+      color: selectedColor,
+      size: selectedSize,
+    };
+
+    Swal.fire({
+      title: "Added!",
+      text: "Product added to cart successfully.",
       icon: "success",
       confirmButtonText: "OK"
     });
 
-    localStorage.setItem("cart", JSON.stringify(cart));
+    cart.push(newProduct);
 
-    return;
+    localStorage.setItem(
+      "cart",
+      JSON.stringify(cart)
+    );
   }
-    const newProduct = {
-    ...product,
-    quantity: quantity,
-    color:selectedColor,
-    size:selectedSize,
-  };
 
-  Swal.fire({
-    title: "Added!",
-    text: "Product added to cart successfully.",
-    icon: "success",
-    confirmButtonText: "OK"
-  });
-    
-  cart.push(newProduct);
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-
- }
   const sizes = [
     "Small",
     "Medium",
@@ -249,365 +348,451 @@ const exists = cart.find((item) => {
   return (
     <>
 
-  <Header/>
+      <Header />
 
-    <main className="shell">
+      <main className="shell">
 
-      <div className="crumb">
-        <span>Home</span>
+        <div className="crumb">
 
-        <ChevronRight />
+          <span>Home</span>
 
-        <span>Shop</span>
+          <ChevronRight />
 
-        <ChevronRight />
+          <span>Shop</span>
 
-        <span>Men</span>
+          <ChevronRight />
 
-        <ChevronRight />
+          <span>Men</span>
 
-        <b>T-shirts</b>
-      </div>
+          <ChevronRight />
 
-      <section className="product">
-        {/* Gallery */}
+          <b>T-shirts</b>
 
-        <div className="gallery">
-          <div className="thumbs">
-            {thumbnails.map((item, index) => (
-              <button
-                key={index}
-                className={
-                  selectedImage === item.fullImage
-                    ? "active"
-                    : ""
-                }
-                onClick={() =>
-                  setSelectedImage(item.fullImage)
-                }
-              >
-                <img
-                  src={item.thumbnail}
-                  alt={`Product ${index + 1}`}
-                />
-              </button>
-            ))}
-          </div>
-
-          <div className="mainimg">
-            <img
-              src={selectedImage}
-              alt={product.name}
-            />
-          </div>
         </div>
 
-        {/* Product information */}
+        <section className="product">
 
-        <div className="info">
-          <h1>{product.name.toUpperCase()}</h1>
+          {/* Gallery */}
 
-          <div className="rating">
-            <div className="stars">
-              ★★★★★
-            </div>
+          <div className="gallery">
 
-            <span>
-              {product.rating}/5
-            </span>
-          </div>
+            <div className="thumbs">
 
-          <div className="price">
-            <b>${product.price}</b>
+              {thumbnails.map((item, index) => (
 
-            {product.oldPrice && (
-              <del>
-                ${product.oldPrice}
-              </del>
-            )}
+                <button
+                  key={index}
+                  className={
+                    selectedImage === item.fullImage
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    setSelectedImage(item.fullImage)
+                  }
+                >
 
-            {product.discount && (
-              <em>
-                {product.discount}
-              </em>
-            )}
-          </div>
-
-          <p>
-            This graphic t-shirt is perfect for
-            any occasion. Crafted from a soft and
-            breathable fabric, it offers superior
-            comfort and style.
-          </p>
-
-          <hr />
-
-          {/* Colors */}
-
-          <label>
-            Select Colors
-          </label>
-
-          <div className="colors">
-            {colors.map((color) => (
-              <button
-                key={color.name}
-                className={
-                  selectedColor === color.name
-                    ? "selected"
-                    : ""
-                }
-                style={{
-                  backgroundColor: color.value,
-                }}
-                onClick={() =>
-                  setSelectedColor(color.name)
-                }
-                aria-label={color.name}
-              >
-                {selectedColor === color.name
-                  ? "✓"
-                  : ""}
-              </button>
-            ))}
-          </div>
-
-          <hr />
-
-          {/* Sizes */}
-
-          <label>
-            Choose Size
-          </label>
-
-          <div className="sizes">
-            {sizes.map((size) => (
-              <button
-                key={size}
-                className={
-                  selectedSize === size
-                    ? "active"
-                    : ""
-                }
-                onClick={() =>
-                  setSelectedSize(size)
-                }
-              >
-                {size}
-              </button>
-            ))}
-          </div>
-
-          <hr />
-
-          {/* Cart controls */}
-
-          <div className="buy">
-            <div className="qty">
-              <button
-                onClick={() =>
-                  setQuantity((current) =>
-                    Math.max(
-                      1,
-                      current - 1
-                    )
-                  )
-                }
-              >
-                <Minus />
-              </button>
-
-              <span>
-                {quantity}
-              </span>
-
-              <button
-                onClick={() =>
-                  setQuantity(
-                    (current) =>
-                      current + 1
-                  )
-                }
-              >
-                <Plus />
-              </button>
-            </div>
-
-            <button className="add" onClick={() => addToCart(product)}>
-              Add to Cart
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* Tabs */}
-
-      <div className="tabs">
-        {[
-          [
-            "details",
-            "Product Details",
-          ],
-          [
-            "reviews",
-            "Rating & Reviews",
-          ],
-          [
-            "faqs",
-            "FAQs",
-          ],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            className={
-              activeTab === key
-                ? "active"
-                : ""
-            }
-            onClick={() =>
-              setActiveTab(key)
-            }
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Reviews */}
-
-      {activeTab === "reviews" && (
-        <section className="reviews">
-          <div className="review-head">
-            <h2>
-              All Reviews{" "}
-              <span>
-                ({reviews.length})
-              </span>
-            </h2>
-
-            <div>
-              <button className="latest">
-                Latest
-                <ChevronDown />
-              </button>
-
-              <button className="write">
-                Write a Review
-              </button>
-            </div>
-          </div>
-
-          <div className="review-grid">
-            {reviews.map((review) => (
-              <article
-                key={review.name}
-              >
-                <div className="rtop">
-                  <div className="stars small">
-                    ★★★★★
-                  </div>
-                </div>
-
-                <h3>
-                  {review.name}
-                </h3>
-
-                <p>
-                  “{review.text}”
-                </p>
-
-                <b>
-                  Posted on{" "}
-                  {review.date}
-                </b>
-              </article>
-            ))}
-          </div>
-
-          <div className="load">
-            <button>
-              Load More Reviews
-            </button>
-          </div>
-        </section>
-      )}
-
-      {/* Product details */}
-
-      {activeTab === "details" && (
-        <div className="placeholder">
-          Premium graphic t-shirt with
-          soft breathable fabric and a
-          comfortable fit.
-        </div>
-      )}
-
-      {/* FAQs */}
-
-      {activeTab === "faqs" && (
-        <div className="placeholder">
-          Machine wash cold. True-to-size
-          fit. Static React page with no
-          API.
-        </div>
-      )}
-
-      {/* Related products */}
-
-      <section className="related">
-        <h2>
-          YOU MIGHT ALSO LIKE
-        </h2>
-
-        <div className="related-grid">
-          {relatedProducts.map(
-            (item) => (
-              <article key={item.name}>
-                <div className="rimg">
                   <img
-                    src={item.image}
-                    alt={item.name}
+                    src={item.thumbnail}
+                    alt={`Product ${index + 1}`}
                   />
-                </div>
 
-                <h3>
-                  {item.name}
-                </h3>
+                </button>
 
-                <div className="rr">
-                  <div className="stars small">
-                    ★★★★★
+              ))}
+
+            </div>
+
+            <div className="mainimg">
+
+              <img
+                src={selectedImage}
+                alt={product.name}
+              />
+
+            </div>
+
+          </div>
+
+          {/* Product information */}
+
+          <div className="info">
+
+            <h1>
+              {product.name.toUpperCase()}
+            </h1>
+
+            <div className="rating">
+
+              <div className="stars">
+                ★★★★★
+              </div>
+
+              <span>
+                {product.rating || 0}/5
+              </span>
+
+            </div>
+
+            <div className="price">
+
+              <b>
+                ${product.price}
+              </b>
+
+              {product.oldPrice && (
+                <del>
+                  ${product.oldPrice}
+                </del>
+              )}
+
+              {product.discount && (
+                <em>
+                  {product.discount}
+                </em>
+              )}
+
+            </div>
+
+            <p>
+              This graphic t-shirt is perfect for
+              any occasion. Crafted from a soft and
+              breathable fabric, it offers superior
+              comfort and style.
+            </p>
+
+            <hr />
+
+            {/* Colors */}
+
+            <label>
+              Select Colors
+            </label>
+
+            <div className="colors">
+
+              {colors.map((color) => (
+
+                <button
+                  key={color.name}
+                  className={
+                    selectedColor === color.name
+                      ? "selected"
+                      : ""
+                  }
+                  style={{
+                    backgroundColor: color.value,
+                  }}
+                  onClick={() =>
+                    setSelectedColor(color.name)
+                  }
+                  aria-label={color.name}
+                >
+
+                  {selectedColor === color.name
+                    ? "✓"
+                    : ""}
+
+                </button>
+
+              ))}
+
+            </div>
+
+            <hr />
+
+            {/* Sizes */}
+
+            <label>
+              Choose Size
+            </label>
+
+            <div className="sizes">
+
+              {sizes.map((size) => (
+
+                <button
+                  key={size}
+                  className={
+                    selectedSize === size
+                      ? "active"
+                      : ""
+                  }
+                  onClick={() =>
+                    setSelectedSize(size)
+                  }
+                >
+                  {size}
+                </button>
+
+              ))}
+
+            </div>
+
+            <hr />
+
+            {/* Cart controls */}
+
+            <div className="buy">
+
+              <div className="qty">
+
+                <button
+                  onClick={() =>
+                    setQuantity((current) =>
+                      Math.max(
+                        1,
+                        current - 1
+                      )
+                    )
+                  }
+                >
+                  <Minus />
+                </button>
+
+                <span>
+                  {quantity}
+                </span>
+
+                <button
+                  onClick={() =>
+                    setQuantity(
+                      (current) =>
+                        current + 1
+                    )
+                  }
+                >
+                  <Plus />
+                </button>
+
+              </div>
+
+              <button
+                className="add"
+                onClick={() =>
+                  addToCart(product)
+                }
+              >
+                Add to Cart
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        {/* Tabs */}
+
+        <div className="tabs">
+
+          {[
+            [
+              "details",
+              "Product Details",
+            ],
+            [
+              "reviews",
+              "Rating & Reviews",
+            ],
+            [
+              "faqs",
+              "FAQs",
+            ],
+          ].map(([key, label]) => (
+
+            <button
+              key={key}
+              className={
+                activeTab === key
+                  ? "active"
+                  : ""
+              }
+              onClick={() =>
+                setActiveTab(key)
+              }
+            >
+              {label}
+            </button>
+
+          ))}
+
+        </div>
+
+        {/* Reviews */}
+
+        {activeTab === "reviews" && (
+
+          <section className="reviews">
+
+            <div className="review-head">
+
+              <h2>
+                All Reviews{" "}
+                <span>
+                  ({reviews.length})
+                </span>
+              </h2>
+
+              <div>
+
+                <button className="latest">
+                  Latest
+                  <ChevronDown />
+                </button>
+
+                <button className="write">
+                  Write a Review
+                </button>
+
+              </div>
+
+            </div>
+
+            <div className="review-grid">
+
+              {reviews.map((review) => (
+
+                <article
+                  key={review.name}
+                >
+
+                  <div className="rtop">
+
+                    <div className="stars small">
+                      ★★★★★
+                    </div>
+
                   </div>
 
-                  <span>
-                    {item.rating}/5
-                  </span>
-                </div>
+                  <h3>
+                    {review.name}
+                  </h3>
 
-                <div className="rp">
+                  <p>
+                    “{review.text}”
+                  </p>
+
                   <b>
-                    ${item.price}
+                    Posted on{" "}
+                    {review.date}
                   </b>
 
-                  {item.oldPrice && (
-                    <del>
-                      ${item.oldPrice}
-                    </del>
-                  )}
+                </article>
 
-                  {item.discount && (
-                    <em>
-                      -{item.discount}%
-                    </em>
-                  )}
-                </div>
-              </article>
-            )
-          )}
-        </div>
-      </section>
-    </main>
-    <Footer/>
+              ))}
+
+            </div>
+
+            <div className="load">
+
+              <button>
+                Load More Reviews
+              </button>
+
+            </div>
+
+          </section>
+
+        )}
+
+        {/* Product details */}
+
+        {activeTab === "details" && (
+
+          <div className="placeholder">
+            Premium graphic t-shirt with
+            soft breathable fabric and a
+            comfortable fit.
+          </div>
+
+        )}
+
+        {/* FAQs */}
+
+        {activeTab === "faqs" && (
+
+          <div className="placeholder">
+            Machine wash cold. True-to-size
+            fit. Static React page with no
+            API.
+          </div>
+
+        )}
+
+        {/* Related products */}
+
+        <section className="related">
+
+          <h2>
+            YOU MIGHT ALSO LIKE
+          </h2>
+
+          <div className="related-grid">
+
+            {relatedProducts.map(
+              (item) => (
+
+                <article key={item.name}>
+
+                  <div className="rimg">
+
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                    />
+
+                  </div>
+
+                  <h3>
+                    {item.name}
+                  </h3>
+
+                  <div className="rr">
+
+                    <div className="stars small">
+                      ★★★★★
+                    </div>
+
+                    <span>
+                      {item.rating}/5
+                    </span>
+
+                  </div>
+
+                  <div className="rp">
+
+                    <b>
+                      ${item.price}
+                    </b>
+
+                    {item.oldPrice && (
+                      <del>
+                        ${item.oldPrice}
+                      </del>
+                    )}
+
+                    {item.discount && (
+                      <em>
+                        -{item.discount}%
+                      </em>
+                    )}
+
+                  </div>
+
+                </article>
+
+              )
+            )}
+
+          </div>
+
+        </section>
+
+      </main>
+
+      <Footer />
+
     </>
   );
 }
