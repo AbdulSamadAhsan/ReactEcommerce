@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 
 import {  Routes, Route } from "react-router-dom";
 
@@ -7,6 +7,7 @@ import Cart from './component/Cart';
 import Shop from "./component/Shop";
 import ProductDetail from './component/ProductDetail';
 import Checkout from './component/Checkout';
+import { Login, Register, RequireAuth } from './component/Auth';
 
 
 // function Home(){
@@ -34,7 +35,10 @@ function App() {
             <Route path="/cart" element={<Cart/>}/>
              <Route path="/shop" element={<Shop/>}/>
          <Route path="/products/:id" element={<ProductDetail />} />
-            { <Route path="*" element={<Checkout/>} />}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+            <Route path="*" element={<Home />} />
             {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
     );

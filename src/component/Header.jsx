@@ -9,10 +9,13 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getAuthToken, getCurrentUser, logout } from '../api';
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [promoOpen, setPromoOpen] = useState(true);
+  const [user, setUser] = useState(getCurrentUser());
+  React.useEffect(() => { const update = () => setUser(getCurrentUser()); window.addEventListener('shopco:auth', update); return () => window.removeEventListener('shopco:auth', update); }, []);
 
   const closeMenu = () => setMenuOpen(false);
 
@@ -94,6 +97,7 @@ export default function Header() {
           <Link to="/account" aria-label="Account">
             <UserRound />
           </Link>
+          {getAuthToken() ? <button className="icon-btn" onClick={logout} title={user?.name ? `Log out ${user.name}` : 'Log out'}>Log out</button> : <Link to="/login">Log in</Link>}
         </div>
       </header>
     </>

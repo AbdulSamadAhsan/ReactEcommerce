@@ -1,7 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowRight, CreditCard } from "lucide-react";
 import "./Checkout.css";
 import Header from "./Header";
+import { getCart } from "../api";
+import {pay} from "../api";
 
 
 export default function App() {
@@ -21,20 +23,40 @@ export default function App() {
     cvv: "",
   });
 
-  const cartItems =
-    JSON.parse(localStorage.getItem("cart")) || [];
+  const [cart, setCart] = useState(null);
+  const [cartError, setCartError] = useState('');
+  const [paymentMessage, setPaymentMessage] = useState('');
+  useEffect(() => {
+    const controller = new AbortController();
+    console.log(controller);
+    getCart(controller.signal).then(setCart).catch(e => { if (e.name !== 'AbortError') setCartError(e.message); });
+    return () => controller.abort();
+  }, []);
 
-  const subtotal = useMemo(() => {
-    return cartItems.reduce(
-      (total, item) =>
-        total + Number(item.price) * Number(item.quantity || 1),
-      0
-    );
-  }, [cartItems]);
 
-  const discount = subtotal * 0.2;
-  const deliveryFee = cartItems.length > 0 ? 15 : 0;
-  const total = subtotal - discount + deliveryFee;
+useEffect(() => {
+    const storedUser = localStorage.getItem("shopco.user");
+       console.log(storedUser);
+    if (storedUser) {
+        const user = JSON.parse(storedUser);
+
+        setForm((prev) => ({
+            ...prev,
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
+            email: user.email || "",
+            phone: user.phone || "",
+            address: user.address || "",
+            city: user.city || "",
+            state: user.state || "",
+            zip: user.zip || "",
+        }));
+    }
+}, []);
+
+  
+  const cartItems = cart?.items || [];
+  const { subtotal = 0, discount = 0, deliveryFee = 0, total = 0 } = cart?.totals || {};
 
   const handleChange = (e) => {
     setForm({
@@ -43,10 +65,15 @@ export default function App() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log(form);
+    setPaymentMessage('');
+    try {
+      await pay(form);
+      setPaymentMessage('Test response received. No payment was processed or order placed.');
+    } catch (error) {
+      setPaymentMessage(error.message || 'Unable to submit payment data. Please try again.');
+    }
   };
 
 
@@ -61,6 +88,9 @@ export default function App() {
         </div>
 
         <h1 className="checkout-title">CHECKOUT</h1>
+        {cartError && <p role="alert">{cartError}</p>}
+        {paymentMessage && <p role="status">{paymentMessage}</p>}
+        {!cart && !cartError && <p role="status">Loading your cart…</p>}
 
         {cartItems.length == 0 ? (
           <div className="empty-checkout">
@@ -247,7 +277,7 @@ export default function App() {
                   {cartItems.map((item) => (
                     <div
                       className="summary-product"
-                      key={item.id || item.name}
+                      key={`${item.productId}-${item.size}-${item.color}`}
                     >
                       <img
                         src={item.image}
@@ -280,7 +310,7 @@ export default function App() {
                 </div>
 
                 <div className="summary-row">
-                  <span>Discount (-20%)</span>
+                  <span>Discount{cart?.promoCode ? " (-20%)" : ""}</span>
                   <strong className="discount-price">
                     -${discount.toFixed(0)}
                   </strong>

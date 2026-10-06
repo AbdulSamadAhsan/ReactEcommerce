@@ -1,5 +1,6 @@
 import React, { useMemo, useState,useEffect } from 'react';
 import ProductCard from './ProductCard';
+import { API_URL } from '../api';
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -15,14 +16,6 @@ import {
 
 } from 'lucide-react';
 import Brand from './Brand';
-
-const newArrivals = [
-  { id:5, name: 'T-shirt with Tape Details', price: 120, rating: 4.5, image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=85' },
-  {id:6,  name: 'Skinny Fit Jeans', price: 240, oldPrice: 260, discount: '-20%', rating: 3.5, image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85' },
-  {id:7, name: 'Checkered Shirt', price: 180, rating: 4.5, image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=900&q=85' },
-  {id:8, name: 'Sleeve Striped T-shirt', price: 130, oldPrice: 160, discount: '-30%', rating: 4.5, image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=900&q=85' },
-];
-    
 
 const reviews = [
   ['Sarah M.', 'I’m blown away by the quality and style of the clothes I received from Shop.co. From casual wear to elegant dresses, every piece has exceeded my expectations.'],
@@ -41,18 +34,14 @@ useEffect(() => {
 
     const fetchApiProducts = async () => {
       try {
-    console.log(import.meta.env.VITE_API_URL);
-   const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/products`
-      );
-
-        const result = await response.json();
-          console.log(result);
-        if (!response.ok) {
-          throw new Error(result.message || "Failed to fetch products");
-        }
-         setTopSellings(result.data);
-        setProducts(result.data);
+        const [newResponse, topResponse] = await Promise.all([
+          fetch(`${API_URL}/products?sort=newest&limit=4`),
+          fetch(`${API_URL}/products?sort=popular&limit=4`),
+        ]);
+        const [newResult, topResult] = await Promise.all([newResponse.json(), topResponse.json()]);
+        if (!newResponse.ok || !topResponse.ok) throw new Error(newResult.message || topResult.message || "Failed to fetch products");
+        setProducts(newResult.data);
+        setTopSellings(topResult.data);
 
       } catch (error) {
 
@@ -117,8 +106,8 @@ useEffect(() => {
 <Brand/>
         <section id="new" className="shell product-section">
           <h2>NEW ARRIVALS</h2>
-          <div className="product-grid">{newArrivals.map(item => <ProductCard key={item.name} item={item} />)}</div>
-          <button className="outline-btn">View All</button>
+          <div className="product-grid">{products.map(item => <ProductCard key={item._id} item={item} />)}</div>
+          <Link className="outline-btn" to="/shop?sort=newest">View All</Link>
         </section>
 
         <div className="shell divider" />
@@ -126,7 +115,7 @@ useEffect(() => {
         <section className="shell product-section">
           <h2>TOP SELLING</h2>
           <div className="product-grid">{topSelling.map(item => <ProductCard key={item.name} item={item} />)}</div>
-          <button className="outline-btn">View All</button>
+          <Link className="outline-btn" to="/shop?sort=popular">View All</Link>
         </section>
 
         <section className="shell styles-wrap">

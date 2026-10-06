@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -16,118 +16,11 @@ import {
 } from "lucide-react";
 
 import "./Shop.css";
+import { Link } from "react-router-dom";
+import { api } from "../api";
 import Header from "./Header";
 import Footer from "./Footer";
 
-const products = [
-  {
-    id: 1,
-    name: "Gradient Graphic T-shirt",
-    image: "/assets/related-2.jpg",
-    rating: 3.5,
-    price: 145,
-    category: "T-shirts",
-    style: "Casual",
-    color: "#000000",
-    sizes: ["Small", "Medium", "Large"],
-  },
-  {
-    id: 2,
-    name: "Polo with Tipping Details",
-    image: "/assets/related-3.jpg",
-    rating: 4.5,
-    price: 180,
-    category: "Shirts",
-    style: "Casual",
-    color: "#ffffff",
-    sizes: ["Medium", "Large", "X-Large"],
-  },
-  {
-    id: 3,
-    name: "Black Striped T-shirt",
-    image: "/assets/related-4.jpg",
-    rating: 5,
-    price: 120,
-    oldPrice: 150,
-    discount: 30,
-    category: "T-shirts",
-    style: "Party",
-    color: "#000000",
-    sizes: ["Small", "Medium", "Large"],
-  },
-  {
-    id: 4,
-    name: "Skinny Fit Jeans",
-    image: "/assets/skinny-jeans.png",
-    rating: 3.5,
-    price: 240,
-    oldPrice: 260,
-    discount: 20,
-    category: "Jeans",
-    style: "Casual",
-    color: "#063af5",
-    sizes: ["Medium", "Large", "X-Large"],
-  },
-  {
-    id: 5,
-    name: "Checkered Shirt",
-    image: "/assets/main-shirt.jpg",
-    rating: 4.5,
-    price: 180,
-    category: "Shirts",
-    style: "Formal",
-    color: "#f50606",
-    sizes: ["Small", "Medium", "Large"],
-  },
-  {
-    id: 6,
-    name: "Sleeve Striped T-shirt",
-    image: "/assets/related-1.jpg",
-    rating: 4.5,
-    price: 130,
-    oldPrice: 160,
-    discount: 20,
-    category: "T-shirts",
-    style: "Gym",
-    color: "#06caf5",
-    sizes: ["X-Small", "Small", "Medium"],
-  },
-  {
-    id: 7,
-    name: "Vertical Striped Shirt",
-    image: "/assets/thumb-front.jpg",
-    rating: 5,
-    price: 212,
-    oldPrice: 232,
-    discount: 20,
-    category: "Shirts",
-    style: "Formal",
-    color: "#ffffff",
-    sizes: ["Large", "X-Large", "XX-Large"],
-  },
-  {
-    id: 8,
-    name: "Courage Graphic T-shirt",
-    image: "/assets/party.jpg",
-    rating: 4,
-    price: 145,
-    category: "T-shirts",
-    style: "Party",
-    color: "#7d06f5",
-    sizes: ["Medium", "Large"],
-  },
-  {
-    id: 9,
-    name: "Loose Fit Bermuda Shorts",
-    image: "/assets/gym.jpg",
-    rating: 3,
-    price: 80,
-    category: "Shorts",
-    style: "Gym",
-    color: "#00c12b",
-    sizes: ["Small", "Medium", "Large"],
-  },
-];
 
 const colors = [
   "#00c12b",
@@ -629,6 +522,12 @@ function SortDropdown({
 }
 
 export default function Shop() {
+  const [currentProducts, setCurrentProducts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [search, setSearch] = useState('');
   const [filterOpen, setFilterOpen] =
     useState(false);
 
@@ -660,10 +559,10 @@ export default function Shop() {
   */
 
   const [minPrice, setMinPrice] =
-    useState(50);
+    useState(PRICE_MIN);
 
   const [maxPrice, setMaxPrice] =
-    useState(200);
+    useState(PRICE_MAX);
 
   const [priceDragging, setPriceDragging] =
     useState(null);
@@ -680,8 +579,8 @@ export default function Shop() {
       size: "",
       category: "",
       style: "",
-      minPrice: 50,
-      maxPrice: 200,
+      minPrice: PRICE_MIN,
+      maxPrice: PRICE_MAX,
     });
 
   /*
@@ -830,17 +729,17 @@ export default function Shop() {
 
     setSelectedStyle("");
 
-    setMinPrice(50);
+    setMinPrice(PRICE_MIN);
 
-    setMaxPrice(200);
+    setMaxPrice(PRICE_MAX);
 
     setAppliedFilters({
       color: "",
       size: "",
       category: "",
       style: "",
-      minPrice: 50,
-      maxPrice: 200,
+      minPrice: PRICE_MIN,
+      maxPrice: PRICE_MAX,
     });
 
     setCurrentPage(1);
@@ -852,136 +751,22 @@ export default function Shop() {
   |--------------------------------------------------------------------------
   */
 
-  const filteredProducts = useMemo(() => {
-    let result = products.filter(
-      (product) => {
-        if (
-          appliedFilters.category &&
-          product.category !==
-            appliedFilters.category
-        ) {
-          return false;
-        }
-
-        if (
-          appliedFilters.style &&
-          product.style !==
-            appliedFilters.style
-        ) {
-          return false;
-        }
-
-        if (
-          appliedFilters.color &&
-          product.color !==
-            appliedFilters.color
-        ) {
-          return false;
-        }
-
-        if (
-          appliedFilters.size &&
-          !product.sizes.includes(
-            appliedFilters.size
-          )
-        ) {
-          return false;
-        }
-
-        if (
-          product.price <
-          appliedFilters.minPrice
-        ) {
-          return false;
-        }
-
-        if (
-          product.price >
-          appliedFilters.maxPrice
-        ) {
-          return false;
-        }
-
-        return true;
-      }
-    );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sorting
-    |--------------------------------------------------------------------------
-    */
-
-    switch (sortBy) {
-      case "rating":
-        result.sort(
-          (a, b) =>
-            b.rating - a.rating
-        );
-        break;
-
-      case "price-low":
-        result.sort(
-          (a, b) =>
-            a.price - b.price
-        );
-        break;
-
-      case "price-high":
-        result.sort(
-          (a, b) =>
-            b.price - a.price
-        );
-        break;
-
-      case "name":
-        result.sort(
-          (a, b) =>
-            a.name.localeCompare(
-              b.name
-            )
-        );
-        break;
-
-      default:
-        break;
-    }
-
-    return result;
-  }, [
-    appliedFilters,
-    sortBy,
-  ]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Pagination
-  |--------------------------------------------------------------------------
-  */
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(
-      filteredProducts.length /
-        productsPerPage
-    )
-  );
-
-  const startIndex =
-    (currentPage - 1) *
-    productsPerPage;
-
-  const currentProducts =
-    filteredProducts.slice(
-      startIndex,
-      startIndex + productsPerPage
-    );
-
-  /*
-  |--------------------------------------------------------------------------
-  | Page Navigation
-  |--------------------------------------------------------------------------
-  */
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true); setError('');
+    const query = { page: currentPage, limit: productsPerPage, sort: { 'price-low': 'price-asc', 'price-high': 'price-desc' }[sortBy] || sortBy, ...appliedFilters };
+    for (const key of Object.keys(query)) if (query[key] === '') delete query[key];
+    if (search.trim()) query.search = search.trim();
+    const timer = setTimeout(() => {
+      api('/products?' + new URLSearchParams(query), { signal: controller.signal }).then(r => {
+        setCurrentProducts(r.data); setTotal(r.pagination.total);
+      }).catch(e => { if (e.name !== 'AbortError') { setError(e.message); setCurrentProducts([]); setTotal(0); } })
+        .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    }, 200);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [appliedFilters, currentPage, sortBy, search, retry]);
+  const totalPages = Math.max(1, Math.ceil(total / productsPerPage));
+  const startIndex = (currentPage - 1) * productsPerPage;
 
   const changePage = (page) => {
     if (
@@ -1104,7 +889,7 @@ export default function Shop() {
               <div className="shop-sort">
 
                 <span className="shop-results-text">
-                  {filteredProducts.length ===
+                  {total ===
                   0
                     ? "Showing 0 Products"
                     : `Showing ${
@@ -1112,17 +897,15 @@ export default function Shop() {
                       }-${Math.min(
                         startIndex +
                           currentProducts.length,
-                        filteredProducts.length
+                        total
                       )} of ${
-                        filteredProducts.length
+                        total
                       } Products`}
                 </span>
 
                 <SortDropdown
                   sortBy={sortBy}
-                  setSortBy={
-                    setSortBy
-                  }
+                  setSortBy={value => { setSortBy(value); setCurrentPage(1); }}
                   sortOpen={
                     sortOpen
                   }
@@ -1148,14 +931,19 @@ export default function Shop() {
 
             {/* Product Grid */}
 
-            <div className="shop-products-grid">
-              {currentProducts.map(
+            <label style={{display: 'block', marginBottom: 20}}>Search products
+              <input type="search" aria-label="Search shop products" value={search} onChange={e => { setSearch(e.target.value); setCurrentPage(1); }} placeholder="Search by name" style={{display:'block',width:'100%',padding:12,border:'1px solid #ddd',borderRadius:12,marginTop:8}} />
+            </label>
+            {loading && <p role="status">Loading products…</p>}
+            {error && <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Try again</button></p>}
+            <div className="shop-products-grid" aria-busy={loading}>
+              {!loading && currentProducts.map(
                 (product) => (
                   <article
                     className="shop-product-card"
-                    key={product.id}
+                    key={product._id}
                   >
-                    <div className="shop-product-image">
+                    <Link to={`/products/${product._id}`}><div className="shop-product-image">
                       <img
                         src={
                           product.image
@@ -1168,7 +956,7 @@ export default function Shop() {
 
                     <h3>
                       {product.name}
-                    </h3>
+                    </h3></Link>
 
                     <Rating
                       value={
@@ -1191,20 +979,14 @@ export default function Shop() {
                       )}
 
                       {product.discount && (
-                        <span className="shop-discount">
-                          -
-                          {
-                            product.discount
-                          }
-                          %
-                        </span>
+                        <span className="shop-discount">{product.discount}</span>
                       )}
                     </div>
                   </article>
                 )
               )}
 
-              {currentProducts.length ===
+              {!loading && !error && currentProducts.length ===
                 0 && (
                 <div
                   style={{
@@ -1248,7 +1030,7 @@ export default function Shop() {
 
             {/* Pagination */}
 
-            {filteredProducts.length >
+            {!loading && total >
               0 && (
               <div className="shop-pagination">
 
