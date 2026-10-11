@@ -15,6 +15,7 @@ const paymentLabel = order => order.paymentStatus==='paid'?'Paid':order.paymentS
 function OrderCard({order}) {
   const currency=order.currency||'USD', stages=['pending','processing','shipped','delivered'];
   const stage=stages.indexOf(order.status);
+  const gstLabel = order.gstRate ? `GST (${Number((order.gstRate * 100).toFixed(2))}%)` : 'GST';
   return <article className="account-order">
     <div className="account-order-top"><div><span className="account-eyebrow">Order number</span><h3>#{order._id}</h3><p>Placed {date(order.createdAt)}</p></div><span className={`account-badge account-badge-${order.status}`}>{labels[order.status]||'Order in progress'}</span></div>
     {!isPast(order)&&stage>=0&&<ol className="account-progress" aria-label="Order progress">{stages.map((step,index)=><li key={step} className={index<=stage?'is-complete':''} aria-current={index===stage?'step':undefined}><span aria-hidden="true"/>{['Received','Preparing','Shipped','Delivered'][index]}</li>)}</ol>}
@@ -24,7 +25,7 @@ function OrderCard({order}) {
       <div><Link to={'/products/'+item.productId}>{item.name}</Link><p>Size: {item.size} · Quantity: {item.quantity}</p><p className="account-color">Color: <span style={{background:item.color}} aria-hidden="true"/>{item.color}</p></div><strong>{money(item.price*item.quantity,currency)}</strong>
     </li>)}</ul>
     <div className="account-order-bottom"><div><span className="account-eyebrow">{order.paymentMethod==='stripe'?'Card via Stripe':'Cash on delivery'}</span><p>{paymentLabel(order)}</p></div><div className="account-total"><span className="account-eyebrow">Order total</span><strong>{money(order.total,currency)}</strong></div></div>
-    <details className="account-details"><summary>Shipping & order details</summary><div className="account-detail-grid"><div><h4>Delivery address</h4><p>{[order.shipping?.firstName,order.shipping?.lastName].filter(Boolean).join(' ')}</p><p>{order.shipping?.address}</p><p>{[order.shipping?.city,order.shipping?.state,order.shipping?.zip,order.shipping?.country].filter(Boolean).join(', ')}</p><p>{order.shipping?.phone}</p></div><dl>{[['Subtotal',order.subtotal],['Discount',-Number(order.discount||0)],['Delivery',order.deliveryFee],['Total',order.total]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{money(value,currency)}</dd></div>)}</dl></div></details>
+    <details className="account-details"><summary>Shipping & order details</summary><div className="account-detail-grid"><div><h4>Delivery address</h4><p>{[order.shipping?.firstName,order.shipping?.lastName].filter(Boolean).join(' ')}</p><p>{order.shipping?.address}</p><p>{[order.shipping?.city,order.shipping?.state,order.shipping?.zip,order.shipping?.country].filter(Boolean).join(', ')}</p><p>{order.shipping?.phone}</p></div><dl>{[['Subtotal',order.subtotal],['Discount',-Number(order.discount||0)],[gstLabel,order.gst ?? 0],['Delivery',order.deliveryFee],['Total',order.total]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{money(value,currency)}</dd></div>)}</dl></div></details>
   </article>;
 }
 
