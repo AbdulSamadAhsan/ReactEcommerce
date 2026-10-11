@@ -68,3 +68,19 @@ export async function createOrder(body, idempotencyKey) {
     body,
   })).data;
 }
+
+export async function startStripeCheckout(body, idempotencyKey) {
+  return (await api('/pay/checkout', {
+    method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}`, 'Idempotency-Key': idempotencyKey }, body,
+  })).data;
+}
+export async function getStripeCheckout(sessionId) {
+  return (await api('/pay/checkout/' + encodeURIComponent(sessionId), {
+    headers: { Authorization: `Bearer ${getAuthToken()}` },
+  })).data;
+}
+export async function cancelStripeCheckout(sessionId) {
+  return (await api('/pay/checkout/' + encodeURIComponent(sessionId) + '/cancel', {
+    method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}` },
+  })).data;
+}

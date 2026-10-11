@@ -30,3 +30,14 @@ an order number and clear the guest cart using its submitted revision, preservin
 cart changes from other tabs. An expired sign-in returns the customer to login.
 
 Set `VITE_API_URL` to override the default deployed API URL in `src/api.js`.
+
+## Stripe test payments
+
+Checkout supports cash on delivery and Stripe-hosted test-card checkout. No Stripe
+secret or publishable key is needed in the browser. Card details are entered only
+on Stripe. A return URL never proves payment: the API verifies the session and
+payment before showing a paid confirmation. Returning without paying lets the
+customer resume the same session or cancel it and edit the order.
+
+Registration accepts separate first and last names. Login returns both fields,
+which prefill shipping at checkout; legacy full-name accounts remain compatible.
