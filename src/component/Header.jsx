@@ -25,7 +25,7 @@ export default function Header() {
         <div className="promo-bar">
           <span>
             Sign up and get 20% off to your first order.{" "}
-            <Link to="/signup">Sign Up Now</Link>
+            <Link to="/register">Sign Up Now</Link>
           </span>
 
           <button

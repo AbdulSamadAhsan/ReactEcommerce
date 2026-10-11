@@ -25,7 +25,7 @@ export default function Checkout() {
   const [form, setForm] = useState(() => {
     const saved = readAttempt(storageKey);
     return saved?.body?.shipping || Object.fromEntries(fields.map(([name]) => [name,
-      user?.[name] || (name === 'firstName' ? user?.name?.split(' ')[0] : '') || '',
+      user?.[name] || (name === 'firstName' ? user?.name?.trim().split(/\s+/)[0] : name === 'lastName' ? user?.name?.trim().split(/\s+/).slice(1).join(' ') : '') || '',
     ]));
   });
   const [cart, setCart] = useState(null);
