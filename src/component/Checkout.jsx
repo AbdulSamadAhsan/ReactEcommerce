@@ -7,7 +7,7 @@ import './Checkout.css';
 
 const fields = [
   ['firstName', 'First Name', 'given-name'], ['lastName', 'Last Name', 'family-name'],
-  ['email', 'Email Address', 'email'], ['phone', 'Phone Number', 'tel'],
+  ['email', 'Email Address', 'email'], ['phone', 'Mobile number', 'tel'],
   ['address', 'Street Address', 'street-address'],
   ['state', 'State / Province', 'address-level1'], ['zip', 'ZIP / Postal Code', 'postal-code'],
 ];
@@ -201,7 +201,7 @@ export default function Checkout() {
               <img src={item.image} alt={item.name} /><div className="summary-product-info"><h3>{item.name}</h3>
                 <p>{item.size} / {item.color} · Qty: {item.quantity}</p></div><strong>{money(item.price * item.quantity)}</strong>
             </div>)}</div><div className="summary-divider" />
-            {[['Subtotal', totals?.subtotal], ['Discount', totals ? -totals.discount : undefined], ['Delivery Fee', totals?.deliveryFee], ['Total', totals?.total]].map(([label, value]) =>
+            {[['Subtotal', totals?.subtotal], ['Discount', totals ? -totals.discount : undefined], ['GST (16%)', totals?.gst], ['Delivery Fee', totals?.deliveryFee], ['Total', totals?.total]].map(([label, value]) =>
               <div className={`summary-row${label === 'Total' ? ' total-row' : ''}`} key={label}><span>{label}</span><strong>{value === undefined ? '—' : money(value)}</strong></div>)}
             {cart.message && <p role="alert">{cart.message} <Link to="/cart">Review cart</Link></p>}
             <button type="submit" className="place-order-btn" disabled={busy || !totals}><span>{paymentMethod === 'stripe' ? 'Continue to Stripe' : 'Place Order'}</span><ArrowRight size={22} /></button>
