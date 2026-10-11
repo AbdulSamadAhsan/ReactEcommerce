@@ -8,10 +8,12 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAuthToken, getCurrentUser, logout } from '../api';
 
 export default function Header() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [promoOpen, setPromoOpen] = useState(true);
   const [user, setUser] = useState(getCurrentUser());
@@ -75,18 +77,20 @@ export default function Header() {
         </nav>
 
         {/* Desktop Search */}
-        <div className="search-box">
+        <form className="search-box" role="search" onSubmit={event => { event.preventDefault(); navigate('/shop?search=' + encodeURIComponent(search.trim())); closeMenu(); }}>
           <Search size={20} />
           <input
             type="search"
             placeholder="Search for products..."
             aria-label="Search for products"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
           />
-        </div>
+        </form>
 
         {/* Header Icons */}
         <div className="header-icons">
-          <button className="mobile-only icon-btn" aria-label="Search">
+          <button className="mobile-only icon-btn" aria-label="Search" onClick={() => navigate('/shop')}>
             <Search />
           </button>
 
@@ -97,7 +101,7 @@ export default function Header() {
           <Link to="/account" aria-label="Account">
             <UserRound />
           </Link>
-          {getAuthToken() ? <button className="icon-btn" onClick={logout} title={user?.name ? `Log out ${user.name}` : 'Log out'}>Log out</button> : <Link to="/login">Log in</Link>}
+          {getAuthToken() ? <button className="icon-btn" onClick={() => { logout(); navigate('/login', { replace: true }); }} title={user?.name ? `Log out ${user.name}` : 'Log out'}>Log out</button> : <Link to="/login">Log in</Link>}
         </div>
       </header>
     </>

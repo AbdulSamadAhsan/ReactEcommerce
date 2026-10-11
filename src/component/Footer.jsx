@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { api } from '../api';
 import "./footer.css";
 import {
   Search,
@@ -14,13 +15,22 @@ import {
 
 } from 'lucide-react';
 export default function Footer() {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState('');
+  async function subscribe(event) {
+    event.preventDefault(); setBusy(true); setMessage('');
+    try { await api('/newsletter', { method: 'POST', body: { email } }); setMessage('You are subscribed. Thank you!'); setEmail(''); }
+    catch (error) { setMessage(error.message); }
+    finally { setBusy(false); }
+  }
   return (
 
 
     <>
     
     <footer className="footer">
-        <div className="shell newsletter"><h2>STAY UPTO DATE ABOUT OUR LATEST OFFERS</h2><div className="subscribe"><label><Mail size={20}/><input placeholder="Enter your email address" /></label><button>Subscribe to Newsletter</button></div></div>
+        <div className="shell newsletter"><h2>STAY UPTO DATE ABOUT OUR LATEST OFFERS</h2><form className="subscribe" onSubmit={subscribe}><label><Mail size={20}/><input type="email" required aria-label="Newsletter email" maxLength={254} value={email} onChange={event => setEmail(event.target.value)} placeholder="Enter your email address" /></label><button disabled={busy}>{busy ? 'Subscribing…' : 'Subscribe to Newsletter'}</button>{message && <p role="status">{message}</p>}</form></div>
         <div className="shell footer-grid">
          
           <div><h4>COMPANY</h4><a>About</a><a>Features</a><a>Works</a><a>Career</a></div>

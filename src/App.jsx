@@ -7,6 +7,8 @@ import Cart from './component/Cart';
 import Shop from "./component/Shop";
 import ProductDetail from './component/ProductDetail';
 import Checkout from './component/Checkout';
+import Account from './component/Account';
+import Brands from './component/Brands';
 import { Login, Register, RequireAuth } from './component/Auth';
 
 
@@ -34,6 +36,10 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/cart" element={<Cart/>}/>
              <Route path="/shop" element={<Shop/>}/>
+            <Route path="/sale" element={<Shop/>}/>
+            <Route path="/new-arrivals" element={<Shop/>}/>
+            <Route path="/brands" element={<Brands/>}/>
+            <Route path="/account" element={<RequireAuth><Account /></RequireAuth>}/>
          <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

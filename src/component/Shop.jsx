@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import "./Shop.css";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { api } from "../api";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -425,6 +425,10 @@ function SortDropdown({
 }) {
   const options = [
     {
+      value: "newest",
+      label: "Newest arrivals",
+    },
+    {
       value: "popular",
       label: "Most Popular",
     },
@@ -522,12 +526,18 @@ function SortDropdown({
 }
 
 export default function Shop() {
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const sale = location.pathname === '/sale';
+  const brand = params.get('brand') || '';
+  const initialSort = location.pathname === '/new-arrivals' ? 'newest' : params.get('sort') || 'popular';
+  const pageTitle = sale ? 'On Sale' : location.pathname === '/new-arrivals' ? 'New Arrivals' : brand || 'Shop';
   const [currentProducts, setCurrentProducts] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(params.get('search') || '');
   const [filterOpen, setFilterOpen] =
     useState(false);
 
@@ -590,7 +600,7 @@ export default function Shop() {
   */
 
   const [sortBy, setSortBy] =
-    useState("popular");
+    useState(initialSort);
 
   const [sortOpen, setSortOpen] =
     useState(false);
@@ -605,6 +615,12 @@ export default function Shop() {
     useState(1);
 
   const productsPerPage = 6;
+  useEffect(() => {
+    const query = new URLSearchParams(location.search);
+    setSearch(query.get('search') || '');
+    setSortBy(location.pathname === '/new-arrivals' ? 'newest' : query.get('sort') || 'popular');
+    setCurrentPage(1);
+  }, [location.search, location.pathname]);
 
   /*
   |--------------------------------------------------------------------------
@@ -757,6 +773,8 @@ export default function Shop() {
     const query = { page: currentPage, limit: productsPerPage, sort: { 'price-low': 'price-asc', 'price-high': 'price-desc' }[sortBy] || sortBy, ...appliedFilters };
     for (const key of Object.keys(query)) if (query[key] === '') delete query[key];
     if (search.trim()) query.search = search.trim();
+    if (sale) query.sale = 'true';
+    if (brand) query.brand = brand;
     const timer = setTimeout(() => {
       api('/products?' + new URLSearchParams(query), { signal: controller.signal }).then(r => {
         setCurrentProducts(r.data); setTotal(r.pagination.total);
@@ -764,7 +782,7 @@ export default function Shop() {
         .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     }, 200);
     return () => { clearTimeout(timer); controller.abort(); };
-  }, [appliedFilters, currentPage, sortBy, search, retry]);
+  }, [appliedFilters, currentPage, sortBy, search, retry, sale, brand]);
   const totalPages = Math.max(1, Math.ceil(total / productsPerPage));
   const startIndex = (currentPage - 1) * productsPerPage;
 
@@ -814,7 +832,7 @@ export default function Shop() {
 
           <b>
             {appliedFilters.category ||
-              "Casual"}
+              pageTitle}
           </b>
         </div>
 
@@ -883,7 +901,7 @@ export default function Shop() {
             <div className="shop-products-top">
               <h1>
                 {appliedFilters.category ||
-                  "Casual"}
+                  pageTitle}
               </h1>
 
               <div className="shop-sort">

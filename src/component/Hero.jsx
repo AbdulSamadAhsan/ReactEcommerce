@@ -1,6 +1,6 @@
 import React, { useMemo, useState,useEffect } from 'react';
 import ProductCard from './ProductCard';
-import { API_URL } from '../api';
+import { api } from '../api';
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -29,33 +29,35 @@ export default function Hero() {
     const [products, setProducts] = useState([]);
       const [loading, setLoading] = useState(true);
 const [topSelling,setTopSellings] = useState([]);
+const [error, setError] = useState('');
+const [retry, setRetry] = useState(0);
 
 useEffect(() => {
-
+    const controller = new AbortController();
+    setLoading(true); setError('');
     const fetchApiProducts = async () => {
       try {
-        const [newResponse, topResponse] = await Promise.all([
-          fetch(`${API_URL}/products?sort=newest&limit=4`),
-          fetch(`${API_URL}/products?sort=popular&limit=4`),
+        const [newResult, topResult] = await Promise.all([
+          api('/products?sort=newest&limit=4', {signal:controller.signal}),
+          api('/products?sort=popular&limit=4', {signal:controller.signal}),
         ]);
-        const [newResult, topResult] = await Promise.all([newResponse.json(), topResponse.json()]);
-        if (!newResponse.ok || !topResponse.ok) throw new Error(newResult.message || topResult.message || "Failed to fetch products");
         setProducts(newResult.data);
         setTopSellings(topResult.data);
 
       } catch (error) {
 
-        console.log(error.message);
+        if(error.name !== 'AbortError') setError(error.message);
 
       } finally {
 
-        setLoading(false);
+        if(!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchApiProducts();
 
-  }, []);
+    return () => controller.abort();
+  }, [retry]);
 
 
       const [reviewIndex, setReviewIndex] = useState(0);
@@ -84,6 +86,7 @@ useEffect(() => {
   return (
     <>
      <main>
+        {error && <p className="shell" role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Reload products</button></p>}
         <section className="hero">
           <div className="shell hero-grid">
             <div className="hero-copy">
