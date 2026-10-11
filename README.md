@@ -23,7 +23,14 @@ The page includes the announcement bar, responsive navigation, hero, brand strip
 
 Checkout posts to `/orders` using the saved sign-in token and an `Idempotency-Key`.
 It sends product selections, shipping details and the cart promo code; the API
-calculates final prices. Cash on delivery is the supported payment method.
+calculates final prices. Customers can choose cash on delivery or card via Stripe
+test Checkout. Shipping asks for name, email, phone, street address, state/province,
+and postal code; city and country are not required.
+Card checkout redirects to Stripe and the API verifies payment before confirming
+the order. A pending card checkout can be cancelled to change payment method.
+Stripe secrets belong only in the API environment, never in the frontend.
+
+For the local API, set `VITE_API_URL=http://localhost:3000/api` in `.env.local`.
 Pending requests are saved per user in session storage and retried with the same
 body and key after an uncertain response or page reload. Successful orders show
 an order number and clear the guest cart using its submitted revision, preserving

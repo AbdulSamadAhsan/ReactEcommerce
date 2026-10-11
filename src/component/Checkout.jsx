@@ -8,9 +8,8 @@ import './Checkout.css';
 const fields = [
   ['firstName', 'First Name', 'given-name'], ['lastName', 'Last Name', 'family-name'],
   ['email', 'Email Address', 'email'], ['phone', 'Phone Number', 'tel'],
-  ['address', 'Street Address', 'street-address'], ['city', 'City', 'address-level2'],
+  ['address', 'Street Address', 'street-address'],
   ['state', 'State / Province', 'address-level1'], ['zip', 'ZIP / Postal Code', 'postal-code'],
-  ['country', 'Country', 'country-name'],
 ];
 const money = value => '$' + Number(value || 0).toFixed(2);
 function readAttempt(key) {
@@ -178,6 +177,7 @@ export default function Checkout() {
         <h2>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Complete your test payment' : 'Confirm your order status'}</h2>
         <p>{busy ? 'Please wait for your confirmation.' : attempt.body?.paymentMethod === 'stripe' ? 'Resume this checkout to pay securely on Stripe. Test cards only.' : 'Your previous request may have reached us. Retry that same order before starting another.'}</p>
         <button className="place-order-btn" disabled={busy} onClick={submit}>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Continue to Stripe' : 'Retry order'}</button>
+        {attempt.stripeSessionId && <button type="button" disabled={busy} onClick={cancelPayment}>Cancel payment and change payment method</button>}
       </section> : !cart ? (!cartError && <p role="status">Loading your cart…</p>) : !items.length ?
         <section className="empty-checkout"><h2>Your cart is empty</h2><Link to="/shop">Continue shopping</Link></section> :
         <form onSubmit={submit} aria-busy={busy}><div className="checkout-grid">
