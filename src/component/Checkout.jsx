@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import Header from './Header';
+import StripePayment from './StripePayment';
 import { cartLine, createOrder, getCart, getCurrentUser, logout, saveCart, startStripeCheckout, getStripeCheckout, cancelStripeCheckout } from '../api';
 import './Checkout.css';
 
@@ -28,6 +29,8 @@ export default function Checkout() {
     ]));
   });
   const [paymentMethod, setPaymentMethod] = useState(() => readAttempt(storageKey)?.body?.paymentMethod || 'cash_on_delivery');
+  const [stripePayment, setStripePayment] = useState(null);
+  const [paying, setPaying] = useState(false);
   const [checkingPayment, setCheckingPayment] = useState(false);
   const returnSession = new URLSearchParams(window.location.search).get('session_id');
   const cancelled = new URLSearchParams(window.location.search).get('payment') === 'cancelled';
@@ -67,6 +70,7 @@ export default function Checkout() {
             shipping: Object.fromEntries(fields.map(([name]) => [name, form[name].trim()])),
             promoCode: cart.promoCode || '',
             paymentMethod,
+            ...(paymentMethod === 'stripe' && { checkoutUi: 'elements' }),
           },
         };
         // Persist before sending so an uncertain response can be retried after a reload.
@@ -78,6 +82,7 @@ export default function Checkout() {
         if (result.paid) { await completeOrder(current, result.order); return; }
         const pending = { ...current, stripeSessionId: result.sessionId };
         sessionStorage.setItem(storageKey, JSON.stringify(pending)); setAttempt(pending);
+        if (result.clientSecret) { setStripePayment(result); return; }
         const destination = new URL(result.url);
         if (destination.protocol !== 'https:' || destination.hostname !== 'checkout.stripe.com') throw new Error('Invalid Stripe checkout URL');
         window.location.assign(destination.href);
@@ -124,7 +129,7 @@ export default function Checkout() {
       const result = await cancelStripeCheckout(attempt.stripeSessionId);
       if (result.paid) { await completeOrder(attempt, result.order); return; }
       if (result.status !== 'expired') throw new Error('Payment cannot be cancelled yet. Check its status again.');
-      sessionStorage.removeItem(storageKey); setAttempt(null); setNotice('');
+      sessionStorage.removeItem(storageKey); setAttempt(null); setNotice(''); setStripePayment(null);
       navigate('/checkout', {replace:true}); setRefresh(n => n + 1);
     } catch(e) { setError(e.message); }
     finally { submitting.current = false; setBusy(false); }
@@ -173,10 +178,14 @@ export default function Checkout() {
       {error && <p role="alert">{error}</p>}
       {cancelled && <p role="status">Payment was cancelled. Your cart is saved. Resume the same checkout below.</p>}
       {returnSession && !order && <button type="button" disabled={checkingPayment} onClick={checkPayment}>{checkingPayment ? 'Checking payment…' : 'Check payment status'}</button>}
-      {attempt ? <section className="checkout-card">
+      {stripePayment ? <section className="checkout-card" style={{maxWidth:560,margin:'0 auto'}}>
+        <h2>Secure card payment</h2><p>Test mode. No real payment will be collected.</p>
+        <StripePayment key={stripePayment.sessionId} {...stripePayment} onBusy={setPaying} />
+        <button type="button" disabled={busy || paying} onClick={cancelPayment}>Cancel payment and change payment method</button>
+      </section> : attempt ? <section className="checkout-card">
         <h2>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Complete your test payment' : 'Confirm your order status'}</h2>
         <p>{busy ? 'Please wait for your confirmation.' : attempt.body?.paymentMethod === 'stripe' ? 'Resume this checkout to pay securely on Stripe. Test cards only.' : 'Your previous request may have reached us. Retry that same order before starting another.'}</p>
-        <button className="place-order-btn" disabled={busy} onClick={submit}>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Continue to Stripe' : 'Retry order'}</button>
+        <button className="place-order-btn" disabled={busy} onClick={submit}>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Continue to payment' : 'Retry order'}</button>
         {attempt.stripeSessionId && <button type="button" disabled={busy} onClick={cancelPayment}>Cancel payment and change payment method</button>}
       </section> : !cart ? (!cartError && <p role="status">Loading your cart…</p>) : !items.length ?
         <section className="empty-checkout"><h2>Your cart is empty</h2><Link to="/shop">Continue shopping</Link></section> :
@@ -204,7 +213,7 @@ export default function Checkout() {
             {[['Subtotal', totals?.subtotal], ['Discount', totals ? -totals.discount : undefined], ['GST (16%)', totals?.gst], ['Delivery Fee', totals?.deliveryFee], ['Total', totals?.total]].map(([label, value]) =>
               <div className={`summary-row${label === 'Total' ? ' total-row' : ''}`} key={label}><span>{label}</span><strong>{value === undefined ? '—' : money(value)}</strong></div>)}
             {cart.message && <p role="alert">{cart.message} <Link to="/cart">Review cart</Link></p>}
-            <button type="submit" className="place-order-btn" disabled={busy || !totals}><span>{paymentMethod === 'stripe' ? 'Continue to Stripe' : 'Place Order'}</span><ArrowRight size={22} /></button>
+            <button type="submit" className="place-order-btn" disabled={busy || !totals}><span>{paymentMethod === 'stripe' ? 'Continue to payment' : 'Place Order'}</span><ArrowRight size={22} /></button>
           </aside>
         </div></form>}
     </>}
