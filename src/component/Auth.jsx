@@ -18,7 +18,7 @@ export function AuthPage({ mode = 'login' }) {
   }
   return <><Header /><main className="auth-page"><section className="auth-card"><h1>{isRegister ? 'Create your account' : 'Welcome back'}</h1><p>{isRegister ? 'Register to save your details and continue to checkout.' : 'Log in to continue to checkout.'}</p>{error && <p className="auth-error" role="alert">{error}</p>}
     <form className="auth-form" onSubmit={submit}>{isRegister && <label>Full name<input required minLength="2" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} autoComplete="name" /></label>}<label>Email<input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} autoComplete="email" /></label><label>Password<input required minLength={isRegister ? 10 : 1} type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} autoComplete={isRegister ? 'new-password' : 'current-password'} /></label><button disabled={busy}>{busy ? 'Please wait…' : isRegister ? 'Create account' : 'Log in'}</button></form>
-    <Link className="auth-link" to={isRegister ? '/login' : '/register'}>{isRegister ? 'Already have an account? Log in' : 'New to SHOP.CO? Create an account'}</Link>
+    <Link className="auth-link" to={isRegister ? '/login' : '/register'} state={location.state}>{isRegister ? 'Already have an account? Log in' : 'New to SHOP.CO? Create an account'}</Link>
   </section></main><Footer /></>;
 }
 export function Login() { return <AuthPage mode="login" />; }

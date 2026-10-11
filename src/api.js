@@ -5,7 +5,7 @@ export const logout = () => { localStorage.removeItem('shopco.authToken'); local
 export async function login(credentials) {
   const result = await api('/auth/login', { method: 'POST', body: credentials });
   localStorage.setItem('shopco.authToken', result.data.token); localStorage.setItem('shopco.user', JSON.stringify(result.data.user));
-  console.log(result.data);
+
  
  
   window.dispatchEvent(new Event('shopco:auth')); return result.data;
@@ -15,6 +15,7 @@ export async function pay(data){
       console.log('POST /api/pay response:', result.data);
       return result.data;
 }
+
 export async function register(credentials) {
   const result = await api('/auth/register', { method: 'POST', body: credentials });
   localStorage.setItem('shopco.authToken', result.data.token); localStorage.setItem('shopco.user', JSON.stringify(result.data.user));
@@ -58,4 +59,12 @@ export async function addCartItem(line) {
   if (match) match.quantity += line.quantity;
   else items.push(line);
   return saveCart(cart, items);
+}
+
+export async function createOrder(body, idempotencyKey) {
+  return (await api('/orders', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getAuthToken()}`, 'Idempotency-Key': idempotencyKey },
+    body,
+  })).data;
 }

@@ -18,3 +18,15 @@ npm run build
 ```
 
 The page includes the announcement bar, responsive navigation, hero, brand strip, new arrivals, top selling products, dress styles, customer reviews, newsletter, and footer.
+
+## Checkout
+
+Checkout posts to `/orders` using the saved sign-in token and an `Idempotency-Key`.
+It sends product selections, shipping details and the cart promo code; the API
+calculates final prices. Cash on delivery is the supported payment method.
+Pending requests are saved per user in session storage and retried with the same
+body and key after an uncertain response or page reload. Successful orders show
+an order number and clear the guest cart using its submitted revision, preserving
+cart changes from other tabs. An expired sign-in returns the customer to login.
+
+Set `VITE_API_URL` to override the default deployed API URL in `src/api.js`.

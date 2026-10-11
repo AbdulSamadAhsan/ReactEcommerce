@@ -673,3 +673,7 @@ input {
         font-size: 22px;
     }
 }
+.checkout-page .place-order-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
