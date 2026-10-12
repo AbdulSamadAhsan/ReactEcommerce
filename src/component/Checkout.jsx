@@ -43,16 +43,32 @@ export default function Checkout() {
   const [refresh, setRefresh] = useState(0);
   const submitting = useRef(false);
   const order = attempt?.order;
+  const submittedRevision = attempt?.revision;
 
   useEffect(() => {
-    if (order) return;
+    // A Stripe return must finish verifying its original payment. Otherwise,
+    // reconcile a saved confirmation with the current server-side cart.
+    if (order && returnSession) return;
     const controller = new AbortController();
     setCartError('');
-    getCart(controller.signal).then(setCart).catch(e => {
+    getCart(controller.signal).then(currentCart => {
+      if (controller.signal.aborted) return;
+      setCart(currentCart);
+      if (order && currentCart.items.length > 0 &&
+          submittedRevision !== undefined && currentCart.revision !== submittedRevision) {
+        // Only retire a completed attempt. Pending/uncertain requests retain
+        // their idempotency key, and an uncleared submitted cart stays protected.
+        sessionStorage.removeItem(storageKey);
+        setAttempt(null);
+        setNotice('');
+        setStripePayment(null);
+        setError('');
+      }
+    }).catch(e => {
       if (e.name !== 'AbortError') setCartError(e.message);
     });
     return () => controller.abort();
-  }, [refresh, order]);
+  }, [refresh, order, returnSession, submittedRevision, storageKey]);
 
   async function submit(event) {
     event.preventDefault();
