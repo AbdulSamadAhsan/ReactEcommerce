@@ -7,6 +7,25 @@ import Footer from './Footer';
 import Rating from './Rating';
 import './productdetail.css';
 
+const reviewDate = value => value && Number.isFinite(Date.parse(value))
+  ? new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  : 'Date unavailable';
+
+function ReviewCard({ review }) {
+  const hasVariant = typeof review.size === 'string' || typeof review.color === 'string';
+  return <article>
+    <Rating value={review.rating} />
+    <h3>{review.name}</h3>
+    {hasVariant ? <div className="review-variant" aria-label="Rated product variant">
+      <span>Size: <strong>{review.size || 'Standard'}</strong></span>
+      <span>Color: {/^#[0-9a-f]{3,8}$/i.test(review.color || '') && <i style={{ backgroundColor: review.color }} aria-hidden="true" />}<strong>{review.color || 'Standard'}</strong></span>
+    </div> : <p className="review-variant-unknown">Variant details unavailable for this earlier review.</p>}
+    {review.comment && <p>{review.comment}</p>}
+    <b>Rated on <time dateTime={review.createdAt}>{reviewDate(review.createdAt)}</time></b>
+    {review.updatedAt && review.createdAt && new Date(review.updatedAt).getTime() > new Date(review.createdAt).getTime() && <small className="review-updated">Updated on <time dateTime={review.updatedAt}>{reviewDate(review.updatedAt)}</time></small>}
+  </article>;
+}
+
 export default function ProductDetail() {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
@@ -66,7 +85,7 @@ export default function ProductDetail() {
       </section>
       <div className="tabs">{[['details', 'Product Details'], ['reviews', 'Rating & Reviews']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>)}</div>
       {tab === 'details' ? <div className="placeholder"><p>{product.description}</p><p>Brand: {product.brand} · Style: {product.style}</p></div> : <section className="reviews"><div className="review-head"><h2>All Reviews ({reviews.length})</h2></div>
-        {reviewsError ? <p role="alert">{reviewsError}</p> : !reviews.length ? <p>No reviews yet.</p> : <div className="review-grid">{reviews.map(review => <article key={review._id}><Rating value={review.rating} /><h3>{review.name}</h3><p>{review.comment}</p><b>Posted on {new Date(review.createdAt).toLocaleDateString()}</b></article>)}</div>}</section>}
+        {reviewsError ? <p role="alert">{reviewsError}</p> : !reviews.length ? <p>No reviews yet.</p> : <div className="review-grid">{reviews.map(review => <ReviewCard key={review._id} review={review} />)}</div>}</section>}
       {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>${p.price}</b>{p.oldPrice > p.price && <del>${p.oldPrice}</del>}{p.discount && <em>{p.discount}</em>}</div></article>)}</div></section>}
     </>}
   </main><Footer /></>;

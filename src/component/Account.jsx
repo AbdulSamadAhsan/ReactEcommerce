@@ -6,13 +6,16 @@ import Header from './Header';
 import Footer from './Footer';
 import './Account.css';
 
+
+import OrderProductRating, { reviewKey } from './OrderProductRating';
+
 const isPast = order => ['delivered', 'cancelled'].includes(order.status);
 const labels = {awaiting_payment:'Awaiting payment',pending:'Order received',processing:'Preparing your order',shipped:'On the way',delivered:'Delivered',cancelled:'Cancelled'};
 const money = (value,currency='USD') => new Intl.NumberFormat('en-US',{style:'currency',currency}).format(Number(value||0));
 const date = value => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : 'Date unavailable';
 const paymentLabel = order => order.paymentStatus==='paid'?'Paid':order.paymentStatus==='expired'?'Payment expired':order.status==='cancelled'?'Not charged':order.paymentMethod==='cash_on_delivery'?'Pay on delivery':'Payment pending';
 
-function OrderCard({order}) {
+function OrderCard({order, reviews, onReviewSaved, onUnauthorized}) {
   const currency=order.currency||'USD', stages=['pending','processing','shipped','delivered'];
   const stage=stages.indexOf(order.status);
   const gstLabel = order.gstRate ? `GST (${Number((order.gstRate * 100).toFixed(2))}%)` : 'GST';
@@ -22,7 +25,7 @@ function OrderCard({order}) {
     {order.status==='awaiting_payment'&&<p className="account-payment-note">Waiting for payment confirmation. If you have just paid, refresh your orders to check the latest status.</p>}
     <ul className="account-items">{order.items.map((item,index)=><li key={`${item.productId}-${index}`}>
       {item.image?<img src={item.image} alt={item.name} loading="lazy"/>:<span className="account-image-placeholder"><Package aria-hidden="true"/></span>}
-      <div><Link to={'/products/'+item.productId}>{item.name}</Link><p>Size: {item.size} · Quantity: {item.quantity}</p><p className="account-color">Color: <span style={{background:item.color}} aria-hidden="true"/>{item.color}</p></div><strong>{money(item.price*item.quantity,currency)}</strong>
+      <div><Link to={'/products/'+item.productId}>{item.name}</Link><p>Size: {item.size} · Quantity: {item.quantity}</p><p className="account-color">Color: <span style={{background:item.color}} aria-hidden="true"/>{item.color}</p>{order.status === 'delivered' && <OrderProductRating orderId={order._id} productId={item.productId} size={item.size} color={item.color} review={reviews[reviewKey({order:order._id,product:item.productId,size:item.size,color:item.color})]} onSaved={onReviewSaved} onUnauthorized={onUnauthorized} />}</div><strong>{money(item.price*item.quantity,currency)}</strong>
     </li>)}</ul>
     <div className="account-order-bottom"><div><span className="account-eyebrow">{order.paymentMethod==='stripe'?'Card via Stripe':'Cash on delivery'}</span><p>{paymentLabel(order)}</p></div><div className="account-total"><span className="account-eyebrow">Order total</span><strong>{money(order.total,currency)}</strong></div></div>
     <details className="account-details"><summary>Shipping & order details</summary><div className="account-detail-grid"><div><h4>Delivery address</h4><p>{[order.shipping?.firstName,order.shipping?.lastName].filter(Boolean).join(' ')}</p><p>{order.shipping?.address}</p><p>{[order.shipping?.city,order.shipping?.state,order.shipping?.zip,order.shipping?.country].filter(Boolean).join(', ')}</p><p>{order.shipping?.phone}</p></div><dl>{[['Subtotal',order.subtotal],['Discount',-Number(order.discount||0)],[gstLabel,order.gst ?? 0],['Delivery',order.deliveryFee],['Total',order.total]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{money(value,currency)}</dd></div>)}</dl></div></details>
@@ -34,6 +37,8 @@ export default function Account() {
   const [data,setData]=useState(null),[error,setError]=useState(''),[retry,setRetry]=useState(0);
   const [loading,setLoading]=useState(true),[loadingMore,setLoadingMore]=useState(false),[hasMore,setHasMore]=useState(false);
   const [filter,setFilter]=useState('current'),[search,setSearch]=useState('');
+  const [reviews, setReviews] = useState({});
+  const saveReview = review => setReviews(current => ({ ...current, [reviewKey(review)]: review }));
   function handleError(error) {
     if(error.name==='AbortError')return;
     if(error.status===401){logout();navigate('/login',{replace:true,state:{from:'/account'}});}
@@ -43,8 +48,8 @@ export default function Account() {
     const controller=new AbortController();
     const options={signal:controller.signal,headers:{Authorization:`Bearer ${getAuthToken()}`}};
     setError('');setLoading(true);
-    Promise.all([api('/auth/me',options),api('/orders',options)])
-      .then(([user,orders])=>{setData({user:user.data,orders:orders.data});setHasMore(orders.data.length===100);})
+    Promise.all([api('/auth/me',options),api('/orders',options),api('/reviews/mine',options)])
+      .then(([user,orders,reviews])=>{setData({user:user.data,orders:orders.data});setReviews(Object.fromEntries(reviews.data.map(review => [reviewKey(review), review])));setHasMore(orders.data.length===100);})
       .catch(handleError).finally(()=>{if(!controller.signal.aborted)setLoading(false);});
     return ()=>controller.abort();
   },[retry,navigate]);
@@ -68,7 +73,7 @@ export default function Account() {
         <div className="account-filters" role="group" aria-label="Filter orders">{[['current','Current orders'],['past','Past orders'],['all','All orders']].map(([value,label])=><button key={value} aria-pressed={filter===value} className={filter===value?'is-active':''} onClick={()=>setFilter(value)}>{label}</button>)}</div>
         {!!orders.length&&<input className="account-search" type="search" aria-label="Search orders" placeholder="Search by order number or product" value={search} onChange={event=>setSearch(event.target.value)}/>}
         <p className="account-results" role="status">{visible.length} {visible.length===1?'order':'orders'}{hasMore?' in loaded history':''}</p>
-        {visible.length?<div className="account-order-list">{visible.map(order=><OrderCard key={order._id} order={order}/>)}</div>:<div className="account-empty"><Package size={38} aria-hidden="true"/><h3>{search?'No matching orders':filter==='past'?'No past orders yet':filter==='current'?'No current orders':'No orders yet'}</h3><p>{search?'Try a different product name or order number.':filter==='past'?'Delivered and cancelled orders will appear here.':'Your next order will appear here once you check out.'}</p><Link to="/shop">Explore the shop <ArrowRight size={17}/></Link></div>}
+        {visible.length?<div className="account-order-list">{visible.map(order=><OrderCard key={order._id} order={order} reviews={reviews} onReviewSaved={saveReview} onUnauthorized={handleError}/>)}</div>:<div className="account-empty"><Package size={38} aria-hidden="true"/><h3>{search?'No matching orders':filter==='past'?'No past orders yet':filter==='current'?'No current orders':'No orders yet'}</h3><p>{search?'Try a different product name or order number.':filter==='past'?'Delivered and cancelled orders will appear here.':'Your next order will appear here once you check out.'}</p><Link to="/shop">Explore the shop <ArrowRight size={17}/></Link></div>}
         {hasMore&&<button className="account-load-more" disabled={loading||loadingMore} onClick={loadMore}>{loadingMore?'Loading…':'Load older orders'}</button>}
       </section></div>}
   </main><Footer/></>;

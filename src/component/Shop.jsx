@@ -48,7 +48,6 @@ const sizes = [
 ];
 
 const PRICE_MIN = 0;
-const PRICE_MAX = 300;
 
 function Rating({ value }) {
   const fullStars = Math.floor(value);
@@ -74,6 +73,7 @@ function Rating({ value }) {
 }
 
 function FilterContent({
+  PRICE_MAX,
   closeMobile,
 
   selectedColor,
@@ -526,6 +526,8 @@ function SortDropdown({
 }
 
 export default function Shop() {
+  const [PRICE_MAX, setPriceLimit] = useState(1);
+  const [priceRangeError, setPriceRangeError] = useState("");
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const sale = location.pathname === '/sale';
@@ -590,7 +592,7 @@ export default function Shop() {
       category: "",
       style: "",
       minPrice: PRICE_MIN,
-      maxPrice: PRICE_MAX,
+      maxPrice: "",
     });
 
   /*
@@ -615,6 +617,19 @@ export default function Shop() {
     useState(1);
 
   const productsPerPage = 6;
+  useEffect(() => {
+    const controller = new AbortController();
+    setPriceRangeError("");
+    api('/products?sort=price-desc&limit=1', { signal: controller.signal }).then(result => {
+      const highest = Number(result.data[0]?.price || 0);
+      const limit = Math.max(1, Math.ceil(highest));
+      setPriceLimit(limit);
+      setMaxPrice(limit);
+    }).catch(error => {
+      if (error.name !== 'AbortError') setPriceRangeError('Could not load the price range. Try again to refresh it.');
+    });
+    return () => controller.abort();
+  }, [retry]);
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     setSearch(query.get('search') || '');
@@ -709,6 +724,7 @@ export default function Shop() {
     priceDragging,
     minPrice,
     maxPrice,
+    PRICE_MAX,
   ]);
 
   /*
@@ -724,7 +740,7 @@ export default function Shop() {
       category: selectedCategory,
       style: selectedStyle,
       minPrice,
-      maxPrice,
+      maxPrice: maxPrice === PRICE_MAX ? "" : maxPrice,
     });
 
     setCurrentPage(1);
@@ -755,7 +771,7 @@ export default function Shop() {
       category: "",
       style: "",
       minPrice: PRICE_MIN,
-      maxPrice: PRICE_MAX,
+      maxPrice: "",
     });
 
     setCurrentPage(1);
@@ -842,6 +858,7 @@ export default function Shop() {
 
           <aside className="shop-sidebar">
             <FilterContent
+              PRICE_MAX={PRICE_MAX}
               selectedColor={
                 selectedColor
               }
@@ -954,6 +971,7 @@ export default function Shop() {
             </label>
             {loading && <p role="status">Loading products…</p>}
             {error && <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Try again</button></p>}
+            {priceRangeError && <p role="alert">{priceRangeError} <button onClick={() => setRetry(n => n + 1)}>Try again</button></p>}
             <div className="shop-products-grid" aria-busy={loading}>
               {!loading && currentProducts.map(
                 (product) => (
@@ -1147,6 +1165,7 @@ export default function Shop() {
 
           <aside className="shop-mobile-filter">
             <FilterContent
+              PRICE_MAX={PRICE_MAX}
               closeMobile={() =>
                 setFilterOpen(
                   false
