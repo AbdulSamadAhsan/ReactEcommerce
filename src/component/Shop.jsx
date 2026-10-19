@@ -1,5 +1,5 @@
 import { hasDiscount } from '../discount';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
