@@ -1,3 +1,4 @@
+import { hasDiscount } from '../discount';
 import React from 'react'
 import {
   Search,
@@ -25,8 +26,8 @@ export default function ProductCard({item}) {
       <Rating value={item.rating} />
       <div className="price-row">
         <strong>${item.price}</strong>
-        {Number(item.oldPrice) > Number(item.price) && <del>${item.oldPrice}</del>}
-        {discountLabel(item) && <span className="discount">{discountLabel(item)}</span>}
+        {Number(item.oldPrice) > 0 && <del>${item.oldPrice}</del>}
+        {hasDiscount(item.discount) && <span className="discount">{item.discount}</span>}
       </div>
     </article>
  

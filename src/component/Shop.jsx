@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import { hasDiscount } from '../discount';
+import React, { useEffect, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -662,6 +663,7 @@ export default function Shop() {
     return () => controller.abort();
   }, [retry]);
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     const query = new URLSearchParams(location.search);
     setSearch(query.get('search') || '');
     setSortBy(location.pathname === '/new-arrivals' ? 'newest' : query.get('sort') || 'popular');
@@ -1039,7 +1041,7 @@ export default function Shop() {
                         ${product.price}
                       </strong>
 
-                      {Number(product.oldPrice) > Number(product.price) && (
+                      {Number(product.oldPrice) > 0 && (
                         <del>
                           $
                           {
@@ -1048,8 +1050,8 @@ export default function Shop() {
                         </del>
                       )}
 
-                      {discountLabel(product) && (
-                        <span className="shop-discount">{discountLabel(product)}</span>
+                      {hasDiscount(product.discount) && (
+                        <span className="shop-discount">{product.discount}</span>
                       )}
                     </div>
                   </article>
@@ -1262,3 +1264,4 @@ export default function Shop() {
     </div>
   );
 }
+
