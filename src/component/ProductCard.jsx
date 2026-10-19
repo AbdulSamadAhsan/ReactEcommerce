@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Link } from "react-router-dom";
 import Rating from './Rating';
+import { discountLabel } from '../productPricing';
 export default function ProductCard({item}) {
   return (
  <>
@@ -24,8 +25,8 @@ export default function ProductCard({item}) {
       <Rating value={item.rating} />
       <div className="price-row">
         <strong>${item.price}</strong>
-        {item.oldPrice && <del>${item.oldPrice}</del>}
-        {item.discount && <span className="discount">{item.discount}</span>}
+        {Number(item.oldPrice) > Number(item.price) && <del>${item.oldPrice}</del>}
+        {discountLabel(item) && <span className="discount">{discountLabel(item)}</span>}
       </div>
     </article>
  

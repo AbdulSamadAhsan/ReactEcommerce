@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
   ChevronRight,
@@ -20,6 +20,7 @@ import { Link, useLocation } from "react-router-dom";
 import { api } from "../api";
 import Header from "./Header";
 import Footer from "./Footer";
+import { discountLabel } from '../productPricing';
 
 
 const colors = [
@@ -48,7 +49,6 @@ const sizes = [
 ];
 
 const PRICE_MIN = 0;
-const PRICE_MAX = 300;
 
 function Rating({ value }) {
   const fullStars = Math.floor(value);
@@ -74,6 +74,7 @@ function Rating({ value }) {
 }
 
 function FilterContent({
+  PRICE_MAX,
   closeMobile,
 
   selectedColor,
@@ -164,11 +165,13 @@ function FilterContent({
       <div className="shop-filter-heading">
         <h3>Filters</h3>
 
-        <SlidersHorizontal size={20} />
+        {!closeMobile && <SlidersHorizontal size={20} aria-hidden="true" />}
 
         {closeMobile && (
           <button
             className="shop-filter-close"
+            type="button"
+            aria-label="Close filters"
             onClick={closeMobile}
           >
             <X size={22} />
@@ -526,6 +529,8 @@ function SortDropdown({
 }
 
 export default function Shop() {
+  const [PRICE_MAX, setPriceLimit] = useState(1);
+  const [priceRangeError, setPriceRangeError] = useState("");
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const sale = location.pathname === '/sale';
@@ -540,6 +545,34 @@ export default function Shop() {
   const [search, setSearch] = useState(params.get('search') || '');
   const [filterOpen, setFilterOpen] =
     useState(false);
+  const filterDrawerRef = useRef(null);
+  useEffect(() => {
+    if (!filterOpen) return;
+    const previousFocus = document.activeElement;
+    const bodyOverflow = document.body.style.overflow;
+    const htmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    filterDrawerRef.current?.querySelector('button')?.focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') setFilterOpen(false);
+      if (event.key !== 'Tab') return;
+      const controls = [...filterDrawerRef.current.querySelectorAll('button:not(:disabled), input:not(:disabled), [tabindex="0"]')];
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
+    const onResize = () => { if (window.innerWidth > 850) setFilterOpen(false); };
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.documentElement.style.overflow = htmlOverflow;
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('resize', onResize);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [filterOpen]);
 
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
@@ -590,7 +623,7 @@ export default function Shop() {
       category: "",
       style: "",
       minPrice: PRICE_MIN,
-      maxPrice: PRICE_MAX,
+      maxPrice: "",
     });
 
   /*
@@ -615,6 +648,19 @@ export default function Shop() {
     useState(1);
 
   const productsPerPage = 6;
+  useEffect(() => {
+    const controller = new AbortController();
+    setPriceRangeError("");
+    api('/products?sort=price-desc&limit=1', { signal: controller.signal }).then(result => {
+      const highest = Number(result.data[0]?.price || 0);
+      const limit = Math.max(1, Math.ceil(highest));
+      setPriceLimit(limit);
+      setMaxPrice(limit);
+    }).catch(error => {
+      if (error.name !== 'AbortError') setPriceRangeError('Could not load the price range. Try again to refresh it.');
+    });
+    return () => controller.abort();
+  }, [retry]);
   useEffect(() => {
     const query = new URLSearchParams(location.search);
     setSearch(query.get('search') || '');
@@ -709,6 +755,7 @@ export default function Shop() {
     priceDragging,
     minPrice,
     maxPrice,
+    PRICE_MAX,
   ]);
 
   /*
@@ -724,7 +771,7 @@ export default function Shop() {
       category: selectedCategory,
       style: selectedStyle,
       minPrice,
-      maxPrice,
+      maxPrice: maxPrice === PRICE_MAX ? "" : maxPrice,
     });
 
     setCurrentPage(1);
@@ -755,7 +802,7 @@ export default function Shop() {
       category: "",
       style: "",
       minPrice: PRICE_MIN,
-      maxPrice: PRICE_MAX,
+      maxPrice: "",
     });
 
     setCurrentPage(1);
@@ -842,6 +889,7 @@ export default function Shop() {
 
           <aside className="shop-sidebar">
             <FilterContent
+              PRICE_MAX={PRICE_MAX}
               selectedColor={
                 selectedColor
               }
@@ -934,6 +982,9 @@ export default function Shop() {
 
                 <button
                   className="shop-mobile-filter-button"
+                  type="button"
+                  aria-label="Open filters"
+                  aria-expanded={filterOpen}
                   onClick={() =>
                     setFilterOpen(
                       true
@@ -954,6 +1005,7 @@ export default function Shop() {
             </label>
             {loading && <p role="status">Loading products…</p>}
             {error && <p role="alert">{error} <button onClick={() => setRetry(n => n + 1)}>Try again</button></p>}
+            {priceRangeError && <p role="alert">{priceRangeError} <button onClick={() => setRetry(n => n + 1)}>Try again</button></p>}
             <div className="shop-products-grid" aria-busy={loading}>
               {!loading && currentProducts.map(
                 (product) => (
@@ -987,7 +1039,7 @@ export default function Shop() {
                         ${product.price}
                       </strong>
 
-                      {product.oldPrice && (
+                      {Number(product.oldPrice) > Number(product.price) && (
                         <del>
                           $
                           {
@@ -996,8 +1048,8 @@ export default function Shop() {
                         </del>
                       )}
 
-                      {product.discount && (
-                        <span className="shop-discount">{product.discount}</span>
+                      {discountLabel(product) && (
+                        <span className="shop-discount">{discountLabel(product)}</span>
                       )}
                     </div>
                   </article>
@@ -1145,8 +1197,9 @@ export default function Shop() {
             }
           />
 
-          <aside className="shop-mobile-filter">
+          <aside className="shop-mobile-filter" role="dialog" aria-modal="true" aria-label="Product filters" ref={filterDrawerRef}>
             <FilterContent
+              PRICE_MAX={PRICE_MAX}
               closeMobile={() =>
                 setFilterOpen(
                   false

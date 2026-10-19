@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ArrowLeftRight, LoaderCircle } from 'lucide-react';
 import Header from './Header';
 import StripePayment from './StripePayment';
 import { cartLine, createOrder, getCart, getCurrentUser, logout, saveCart, startStripeCheckout, getStripeCheckout, cancelStripeCheckout } from '../api';
@@ -13,6 +13,9 @@ const fields = [
   ['state', 'State / Province', 'address-level1'], ['zip', 'ZIP / Postal Code', 'postal-code'],
 ];
 const money = value => '$' + Number(value || 0).toFixed(2);
+const orderDateTime = value => value && Number.isFinite(Date.parse(value))
+  ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
+  : null;
 function readAttempt(key) {
   try { return JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { return null; }
 }
@@ -43,16 +46,32 @@ export default function Checkout() {
   const [refresh, setRefresh] = useState(0);
   const submitting = useRef(false);
   const order = attempt?.order;
+  const submittedRevision = attempt?.revision;
 
   useEffect(() => {
-    if (order) return;
+    // A Stripe return must finish verifying its original payment. Otherwise,
+    // reconcile a saved confirmation with the current server-side cart.
+    if (order && returnSession) return;
     const controller = new AbortController();
     setCartError('');
-    getCart(controller.signal).then(setCart).catch(e => {
+    getCart(controller.signal).then(currentCart => {
+      if (controller.signal.aborted) return;
+      setCart(currentCart);
+      if (order && currentCart.items.length > 0 &&
+          submittedRevision !== undefined && currentCart.revision !== submittedRevision) {
+        // Only retire a completed attempt. Pending/uncertain requests retain
+        // their idempotency key, and an uncleared submitted cart stays protected.
+        sessionStorage.removeItem(storageKey);
+        setAttempt(null);
+        setNotice('');
+        setStripePayment(null);
+        setError('');
+      }
+    }).catch(e => {
       if (e.name !== 'AbortError') setCartError(e.message);
     });
     return () => controller.abort();
-  }, [refresh, order]);
+  }, [refresh, order, returnSession, submittedRevision, storageKey]);
 
   async function submit(event) {
     event.preventDefault();
@@ -169,8 +188,9 @@ export default function Checkout() {
     {order ? <section className="checkout-card" role="status">
       <h2>Thank you for your order</h2>
       <p>Order number: <strong>{order._id}</strong></p>
+      <p>Order date &amp; time: <strong>{orderDateTime(order.createdAt) ? <time dateTime={order.createdAt}>{orderDateTime(order.createdAt)}</time> : 'Unavailable'}</strong></p>
       <p>Total: <strong>{money(order.total)} {order.currency}</strong></p>
-      <p>Payment: {order.paymentMethod === 'stripe' ? 'Stripe test card — paid' : 'Cash on delivery'}. Your order is {order.status}.</p>
+      <p>Payment: {order.paymentMethod === 'stripe' ? 'Stripe card — paid' : 'Cash on delivery'}. Your order is {order.status}.</p>
       {notice && <p role="alert">{notice}</p>}
       <Link to="/shop" onClick={() => sessionStorage.removeItem(storageKey)}>Continue shopping</Link>
     </section> : <>
@@ -179,14 +199,14 @@ export default function Checkout() {
       {cancelled && <p role="status">Payment was cancelled. Your cart is saved. Resume the same checkout below.</p>}
       {returnSession && !order && <button type="button" disabled={checkingPayment} onClick={checkPayment}>{checkingPayment ? 'Checking payment…' : 'Check payment status'}</button>}
       {stripePayment ? <section className="checkout-card" style={{maxWidth:560,margin:'0 auto'}}>
-        <h2>Secure card payment</h2><p>Test mode. No real payment will be collected.</p>
+        <h2>Secure card payment</h2><p>No real payment will be collected.</p>
         <StripePayment key={stripePayment.sessionId} {...stripePayment} onBusy={setPaying} />
-        <button type="button" disabled={busy || paying} onClick={cancelPayment}>Cancel payment and change payment method</button>
+        <button type="button" className="payment-change-btn" disabled={busy || paying} onClick={cancelPayment}>{busy ? <LoaderCircle className="payment-change-spinner" size={18} aria-hidden="true" /> : <ArrowLeftRight size={18} aria-hidden="true" />}<span>{busy ? 'Cancelling payment…' : 'Cancel payment and change payment method'}</span></button>
       </section> : attempt ? <section className="checkout-card">
-        <h2>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Complete your test payment' : 'Confirm your order status'}</h2>
-        <p>{busy ? 'Please wait for your confirmation.' : attempt.body?.paymentMethod === 'stripe' ? 'Resume this checkout to pay securely on Stripe. Test cards only.' : 'Your previous request may have reached us. Retry that same order before starting another.'}</p>
+        <h2>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Complete your payment' : 'Confirm your order status'}</h2>
+        <p>{busy ? 'Please wait for your confirmation.' : attempt.body?.paymentMethod === 'stripe' ? 'Resume this checkout securely on Stripe. No real payment will be collected.' : 'Your previous request may have reached us. Retry that same order before starting another.'}</p>
         <button className="place-order-btn" disabled={busy} onClick={submit}>{busy ? 'Please wait…' : attempt.body?.paymentMethod === 'stripe' ? 'Continue to payment' : 'Retry order'}</button>
-        {attempt.stripeSessionId && <button type="button" disabled={busy} onClick={cancelPayment}>Cancel payment and change payment method</button>}
+        {attempt.stripeSessionId && <button type="button" className="payment-change-btn" disabled={busy} onClick={cancelPayment}>{busy ? <LoaderCircle className="payment-change-spinner" size={18} aria-hidden="true" /> : <ArrowLeftRight size={18} aria-hidden="true" />}<span>{busy ? 'Cancelling payment…' : 'Cancel payment and change payment method'}</span></button>}
       </section> : !cart ? (!cartError && <p role="status">Loading your cart…</p>) : !items.length ?
         <section className="empty-checkout"><h2>Your cart is empty</h2><Link to="/shop">Continue shopping</Link></section> :
         <form onSubmit={submit} aria-busy={busy}><div className="checkout-grid">
@@ -201,8 +221,8 @@ export default function Checkout() {
             </div></section>
             <section className="checkout-card payment-card"><h2>Payment Method</h2>
               <label className="payment-option"><span>Cash on delivery</span><input type="radio" name="paymentMethod" value="cash_on_delivery" checked={paymentMethod === 'cash_on_delivery'} onChange={e => setPaymentMethod(e.target.value)} /></label>
-              <label className="payment-option"><span>Card via Stripe (test mode)</span><input type="radio" name="paymentMethod" value="stripe" checked={paymentMethod === 'stripe'} onChange={e => setPaymentMethod(e.target.value)} /></label>
-              <p>{paymentMethod === 'stripe' ? 'Use a Stripe test card. No real payment will be collected.' : 'Pay when your order arrives.'}</p>
+              <label className="payment-option"><span>Card via Stripe</span><input type="radio" name="paymentMethod" value="stripe" checked={paymentMethod === 'stripe'} onChange={e => setPaymentMethod(e.target.value)} /></label>
+              <p>{paymentMethod === 'stripe' ? 'No real payment will be collected.' : 'Pay when your order arrives.'}</p>
             </section>
           </div>
           <aside className="checkout-summary"><h2>Order Summary</h2>

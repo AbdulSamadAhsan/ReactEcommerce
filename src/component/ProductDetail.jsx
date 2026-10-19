@@ -1,14 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Minus, Plus, ChevronRight } from 'lucide-react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Minus, Plus, ChevronRight } from 'lucide-react';
 import { api, addCartItem } from '../api';
 import Header from './Header';
 import Footer from './Footer';
 import Rating from './Rating';
+import { discountLabel } from '../productPricing';
 import './productdetail.css';
+
+const reviewDate = value => value && Number.isFinite(Date.parse(value))
+  ? new Date(value).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+  : 'Date unavailable';
+
+function ReviewCard({ review }) {
+  const hasVariant = typeof review.size === 'string' || typeof review.color === 'string';
+  return <article>
+    <Rating value={review.rating} />
+    <h3>{review.name}</h3>
+    {hasVariant ? <div className="review-variant" aria-label="Rated product variant">
+      <span>Size: <strong>{review.size || 'Standard'}</strong></span>
+      <span>Color: {/^#[0-9a-f]{3,8}$/i.test(review.color || '') && <i style={{ backgroundColor: review.color }} aria-hidden="true" />}<strong>{review.color || 'Standard'}</strong></span>
+    </div> : <p className="review-variant-unknown">Variant details unavailable for this earlier review.</p>}
+    {review.comment && <p>{review.comment}</p>}
+    <b>Rated on <time dateTime={review.createdAt}>{reviewDate(review.createdAt)}</time></b>
+    {review.updatedAt && review.createdAt && new Date(review.updatedAt).getTime() > new Date(review.createdAt).getTime() && <small className="review-updated">Updated on <time dateTime={review.updatedAt}>{reviewDate(review.updatedAt)}</time></small>}
+  </article>;
+}
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const goBack = () => {
+    if (window.history.state?.idx > 0) navigate(-1);
+    else navigate('/shop');
+  };
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -47,6 +72,7 @@ export default function ProductDetail() {
   }
 
   return <><Header /><main className="shell">
+    <div className="product-back-row"><button type="button" className="product-back-button" onClick={goBack}><ArrowLeft size={18} aria-hidden="true" /><span>Back</span></button></div>
     <div className="crumb"><Link to="/">Home</Link><ChevronRight /><Link to="/shop">Shop</Link>{product && <><ChevronRight /><b>{product.category}</b></>}</div>
     {loading ? <p role="status" className="not-found">Loading product…</p> : error ? <div className="not-found" role="alert"><p>{error}</p><button onClick={() => setRetry(n => n + 1)}>Try again</button> <Link to="/shop">Back to shop</Link></div> : product && <>
       <section className="product">
@@ -54,7 +80,7 @@ export default function ProductDetail() {
           <button key={src} className={image === src ? 'active' : ''} onClick={() => setImage(src)} aria-label={`View image ${index + 1}`}><img src={src} alt={`${product.name} view ${index + 1}`} /></button>)}</div>
           <div className="mainimg"><img src={image} alt={product.name} /></div></div>
         <div className="info"><h1>{product.name.toUpperCase()}</h1><Rating value={product.rating || 0} />
-          <div className="price"><b>${product.price}</b>{product.oldPrice > product.price && <del>${product.oldPrice}</del>}{product.discount && <em>{product.discount}</em>}</div>
+          <div className="price"><b>${product.price}</b>{product.oldPrice > product.price && <del>${product.oldPrice}</del>}{discountLabel(product) && <em>{discountLabel(product)}</em>}</div>
           <p>{product.description}</p><hr /><label>Select Colors</label>
           <div className="colors">{product.colors.map(value => <button key={value} style={{ backgroundColor: value }} className={color === value ? 'selected' : ''} aria-label={`Color ${value}`} aria-pressed={color === value} onClick={() => setColor(value)}>{color === value ? '✓' : ''}</button>)}</div>
           <hr /><label>Choose Size</label><div className="sizes">{product.sizes.map(value => <button key={value} className={size === value ? 'active' : ''} aria-pressed={size === value} onClick={() => setSize(value)}>{value}</button>)}</div>
@@ -66,8 +92,8 @@ export default function ProductDetail() {
       </section>
       <div className="tabs">{[['details', 'Product Details'], ['reviews', 'Rating & Reviews']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>)}</div>
       {tab === 'details' ? <div className="placeholder"><p>{product.description}</p><p>Brand: {product.brand} · Style: {product.style}</p></div> : <section className="reviews"><div className="review-head"><h2>All Reviews ({reviews.length})</h2></div>
-        {reviewsError ? <p role="alert">{reviewsError}</p> : !reviews.length ? <p>No reviews yet.</p> : <div className="review-grid">{reviews.map(review => <article key={review._id}><Rating value={review.rating} /><h3>{review.name}</h3><p>{review.comment}</p><b>Posted on {new Date(review.createdAt).toLocaleDateString()}</b></article>)}</div>}</section>}
-      {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>${p.price}</b>{p.oldPrice > p.price && <del>${p.oldPrice}</del>}{p.discount && <em>{p.discount}</em>}</div></article>)}</div></section>}
+        {reviewsError ? <p role="alert">{reviewsError}</p> : !reviews.length ? <p>No reviews yet.</p> : <div className="review-grid">{reviews.map(review => <ReviewCard key={review._id} review={review} />)}</div>}</section>}
+      {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>${p.price}</b>{p.oldPrice > p.price && <del>${p.oldPrice}</del>}{discountLabel(p) && <em>{discountLabel(p)}</em>}</div></article>)}</div></section>}
     </>}
   </main><Footer /></>;
 }

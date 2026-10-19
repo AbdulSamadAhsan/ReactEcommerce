@@ -10,6 +10,7 @@ import Checkout from './component/Checkout';
 import Account from './component/Account';
 import Brands from './component/Brands';
 import { Login, Register, RequireAuth } from './component/Auth';
+import { ForgotPassword, ResetPassword } from './component/PasswordReset';
 
 
 // function Home(){
@@ -43,6 +44,8 @@ function App() {
          <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
             <Route path="*" element={<Home />} />
             {/* <Route path="*" element={<NotFound />} /> */}

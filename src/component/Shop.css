@@ -1295,3 +1295,34 @@ img {
         gap: 24px 12px;
     }
 }
+@media (max-width: 850px) {
+    .shop-mobile-filter {
+        max-height: 88vh;
+        max-height: 88dvh;
+        overscroll-behavior-y: contain;
+        scrollbar-width: thin;
+        padding: 0 20px max(24px, env(safe-area-inset-bottom));
+        box-shadow: 0 -12px 40px rgb(0 0 0 / 12%);
+    }
+    .shop-mobile-filter .shop-filter-heading {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        min-height: 76px;
+        padding: 16px 0;
+        background: #fff;
+    }
+    .shop-mobile-filter .shop-filter-heading + .shop-filter-divider { margin-top: 0; }
+    .shop-mobile-filter .shop-filter-close {
+        position: static;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f3f3f3;
+        color: #111;
+        cursor: pointer;
+    }
+    .shop-mobile-filter .shop-filter-close:hover { background: #e8e8e8; }
+    .shop-mobile-filter .shop-filter-close:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+}

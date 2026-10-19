@@ -84,3 +84,26 @@ export async function cancelStripeCheckout(sessionId) {
     method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}` },
   })).data;
 }
+
+
+export async function updateAccount(body) {
+  const result = await api('/auth/me', { method: 'PATCH', headers: { Authorization: `Bearer ${getAuthToken()}` }, body });
+  if (result.data.requiresLogin) {
+    logout();
+    return result.data;
+  }
+  localStorage.setItem('shopco.authToken', result.data.token);
+  localStorage.setItem('shopco.user', JSON.stringify(result.data.user));
+  window.dispatchEvent(new Event('shopco:auth'));
+  return result.data;
+}
+
+
+export async function deleteAccount(currentPassword) {
+  const result = await api('/auth/me', { method: 'DELETE', headers: { Authorization: `Bearer ${getAuthToken()}` }, body: { currentPassword } });
+  logout();
+  // Clear this browser's customer-specific cart caches after successful deletion.
+  for (const key of ['shopco.cartToken', 'cart', 'shopco.cartTotals', 'shopco.legacyCart']) localStorage.removeItem(key);
+  window.dispatchEvent(new Event('shopco:cart'));
+  return result.data;
+}
