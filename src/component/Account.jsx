@@ -9,6 +9,9 @@ import AccountSettings from './AccountSettings';
 import DeleteAccount from './DeleteAccount';
 import OrderProductRating, { reviewKey } from './OrderProductRating';
 
+
+import OrderProductRating, { reviewKey } from './OrderProductRating';
+
 const isPast = order => ['delivered', 'cancelled'].includes(order.status);
 const labels = {awaiting_payment:'Awaiting payment',pending:'Order received',processing:'Preparing your order',shipped:'On the way',delivered:'Delivered',cancelled:'Cancelled'};
 const money = (value,currency='USD') => new Intl.NumberFormat('en-US',{style:'currency',currency}).format(Number(value||0));
