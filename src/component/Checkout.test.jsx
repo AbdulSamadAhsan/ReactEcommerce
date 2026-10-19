@@ -81,7 +81,7 @@ describe('checkout after a completed order', () => {
     const { order, ...pending } = completed;
     sessionStorage.setItem(key, JSON.stringify(pending));
     mount();
-    await screen.findByRole('heading', { name: 'Complete your test payment' });
+    await screen.findByRole('heading', { name: 'Complete your payment' });
     fireEvent.click(screen.getByRole('button', { name: 'Continue to payment' }));
     await waitFor(() => expect(api.startStripeCheckout).toHaveBeenCalled());
     expect(api.startStripeCheckout.mock.calls[0][1]).toBe(completed.key);

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run --pool=threads --maxWorkers=1"
+    "test": "node --test tests/*.test.js && vitest run src --pool=threads --maxWorkers=1"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^7.0.0",

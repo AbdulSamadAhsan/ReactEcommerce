@@ -32,11 +32,6 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const goBack = () => { if (window.history.state?.idx > 0) navigate(-1); else navigate("/shop", { replace: true }); };
   const { id } = useParams();
-  const navigate = useNavigate();
-  const goBack = () => {
-    if (window.history.state?.idx > 0) navigate(-1);
-    else navigate('/shop');
-  };
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [reviews, setReviews] = useState([]);
