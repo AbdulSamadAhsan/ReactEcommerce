@@ -356,11 +356,18 @@ input {
 }
 
 .outline-btn {
-  margin-top: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(100%, 218px);
+  min-height: 48px;
+  margin: 36px auto 0;
+  text-decoration: none;
+  color: inherit;
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 999px;
-  padding: 14px 76px;
+  padding: 14px 24px;
   cursor: pointer;
 }
 
@@ -904,3 +911,8 @@ input {
     font-size: 32px;
   }
 }
+.outline-btn:hover { background: #f5f5f5; border-color: #aaa; }
+.outline-btn:focus-visible { outline: 2px solid #000; outline-offset: 4px; }
+@media (max-width: 600px) { .product-section .outline-btn { width: 100%; margin-top: 24px; } }
+
+.outline-btn:disabled { cursor: wait; opacity: 0.65; }

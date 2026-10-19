@@ -1,0 +1,159 @@
+:root {
+  --action-ink: #151515;
+  --action-muted: #f3f3f3;
+  --action-border: #dedede;
+  --action-radius: 999px;
+}
+
+button, a:is(.dark-btn, .outline-btn, .checkout-button, .account-shop-link, .account-load-more) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+button:focus-visible, a:focus-visible, summary:focus-visible {
+  outline: 3px solid #666;
+  outline-offset: 4px;
+}
+
+.dark-btn, .place-order-btn, .checkout-button, .auth-form button,
+.buy .add, .shop-apply-filter, .promo-form > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 50px;
+  max-width: 100%;
+  padding: 14px 24px;
+  border: 1px solid var(--action-ink);
+  border-radius: var(--action-radius);
+  background: var(--action-ink);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+}
+
+.outline-btn, .account-refresh, .account-load-more, .shop-page-nav,
+.account-shop-link, .subscribe button, .checkout-card > button:not(.place-order-btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  max-width: 100%;
+  padding: 12px 22px;
+  border: 1px solid var(--action-border);
+  border-radius: var(--action-radius);
+  background: #fff;
+  color: var(--action-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+}
+
+.product-section .outline-btn { display: flex; }
+.shop-mobile-filter-button, .shop-filter-close,
+.cart-page .trash, .quantity-pill .quantity-button, .qty button,
+.section-heading-row button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--action-radius);
+}
+
+.quantity-pill, .qty { min-height: 48px; border-radius: var(--action-radius); }
+.sizes, .account-filters, .shop-size-grid { gap: 8px; flex-wrap: wrap; }
+.sizes button, .account-filters button, .shop-size-grid button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid transparent;
+  border-radius: var(--action-radius);
+  font-size: 14px;
+  line-height: 1.4;
+}
+.colors button, .shop-color { min-width: 44px; min-height: 44px; }
+.shop-page-numbers button { min-width: 44px; min-height: 44px; border-radius: 12px; }
+.tabs button { min-height: 48px; padding: 12px 8px; }
+
+/* Recovery actions use the same language as the primary controls. */
+[role="alert"] button, .checkout-page > button, .account-error button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--action-border);
+  border-radius: var(--action-radius);
+  background: #fff;
+  color: var(--action-ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (hover: hover) {
+  .dark-btn:hover, .place-order-btn:not(:disabled):hover, .checkout-button:not(:disabled):hover,
+  .auth-form button:not(:disabled):hover, .buy .add:not(:disabled):hover,
+  .shop-apply-filter:not(:disabled):hover, .promo-form > button:not(:disabled):hover {
+    background: #333;
+    border-color: #333;
+    box-shadow: 0 4px 12px #00000014;
+  }
+  .outline-btn:not(:disabled):hover, .account-refresh:not(:disabled):hover,
+  .account-load-more:not(:disabled):hover, .shop-page-nav:not(:disabled):hover,
+  .subscribe button:not(:disabled):hover, .account-shop-link:hover,
+  .icon-btn:not(:disabled):hover { background: #f0f0f0; border-color: #bbb; }
+}
+
+@media (max-width: 600px) {
+  .dark-btn, .place-order-btn, .checkout-button, .auth-form button,
+  .buy .add, .subscribe button, .shop-apply-filter { min-height: 50px; }
+  .product-section .outline-btn, .account-load-more { width: 100%; }
+  .buy { gap: 12px; flex-wrap: wrap; }
+  .buy .add { flex: 1 1 auto; min-width: 0; width: 100%; height: auto; }
+  .sizes button { padding-inline: 16px; }
+  .account-filters button { flex: 1 1 auto; padding-inline: 12px; }
+  .shop-pagination { gap: 8px; flex-wrap: wrap; }
+  .shop-page-nav { padding-inline: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, a:is(.dark-btn, .outline-btn, .checkout-button, .account-shop-link, .account-load-more) { transition: none; }
+}
+
+.icon-btn { min-width: 44px; min-height: 44px; }
+.header-icons > a { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border-radius: 999px; }
+@media (max-width: 400px) { .header { height: auto; min-height: 72px; flex-wrap: wrap; gap: 8px; padding-block: 12px; } .header-icons { width: 100%; justify-content: flex-end; gap: 8px; } }
+
+.checkout-card > button:not(.place-order-btn) { width: 100%; margin-top: 12px; }
+
+.product-back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 20px 0 0;
+  padding: 10px 18px;
+  border: 1px solid var(--action-border);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--action-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.product-back-button svg { flex-shrink: 0; }
+@media (hover: hover) {
+  .product-back-button:hover { background: #f3f3f3; border-color: #aaa; box-shadow: 0 2px 8px #0000000a; }
+}
+@media (max-width: 600px) {
+  .product-back-button { min-height: 48px; margin-top: 12px; padding-inline: 18px; }
+}

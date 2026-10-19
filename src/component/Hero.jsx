@@ -1,5 +1,5 @@
 import React, { useMemo, useState,useEffect } from 'react';
-import ProductCard from './ProductCard';
+import ProductSection from './ProductSection';
 import { api } from '../api';
 import { Link } from "react-router-dom";
 import {
@@ -107,19 +107,11 @@ useEffect(() => {
         </section>
 
 <Brand/>
-        <section id="new" className="shell product-section">
-          <h2>NEW ARRIVALS</h2>
-          <div className="product-grid">{products.map(item => <ProductCard key={item._id} item={item} />)}</div>
-          <Link className="outline-btn" to="/shop?sort=newest">View All</Link>
-        </section>
+        <ProductSection id="new" title="NEW ARRIVALS" sort="newest" products={products} />
 
         <div className="shell divider" />
 
-        <section className="shell product-section">
-          <h2>TOP SELLING</h2>
-          <div className="product-grid">{topSelling.map(item => <ProductCard key={item.name} item={item} />)}</div>
-          <Link className="outline-btn" to="/shop?sort=popular">View All</Link>
-        </section>
+        <ProductSection id="top-selling" title="TOP SELLING" sort="popular" products={topSelling} />
 
         <section className="shell styles-wrap">
           <h2>BROWSE BY DRESS STYLE</h2>

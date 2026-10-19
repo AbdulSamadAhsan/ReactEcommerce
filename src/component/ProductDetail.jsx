@@ -1,6 +1,7 @@
+import { hasDiscount } from '../discount';
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { Minus, Plus, ChevronRight } from 'lucide-react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Minus, Plus, ChevronRight, ArrowLeft } from 'lucide-react';
 import { api, addCartItem } from '../api';
 import Header from './Header';
 import Footer from './Footer';
@@ -27,6 +28,8 @@ function ReviewCard({ review }) {
 }
 
 export default function ProductDetail() {
+  const navigate = useNavigate();
+  const goBack = () => { if (window.history.state?.idx > 0) navigate(-1); else navigate("/shop", { replace: true }); };
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
@@ -66,6 +69,7 @@ export default function ProductDetail() {
   }
 
   return <><Header /><main className="shell">
+    <button type="button" className="product-back-button" onClick={goBack} aria-label="Go back to the previous page"><ArrowLeft size={18} aria-hidden="true" /><span>Back</span></button>
     <div className="crumb"><Link to="/">Home</Link><ChevronRight /><Link to="/shop">Shop</Link>{product && <><ChevronRight /><b>{product.category}</b></>}</div>
     {loading ? <p role="status" className="not-found">Loading product…</p> : error ? <div className="not-found" role="alert"><p>{error}</p><button onClick={() => setRetry(n => n + 1)}>Try again</button> <Link to="/shop">Back to shop</Link></div> : product && <>
       <section className="product">
@@ -73,7 +77,7 @@ export default function ProductDetail() {
           <button key={src} className={image === src ? 'active' : ''} onClick={() => setImage(src)} aria-label={`View image ${index + 1}`}><img src={src} alt={`${product.name} view ${index + 1}`} /></button>)}</div>
           <div className="mainimg"><img src={image} alt={product.name} /></div></div>
         <div className="info"><h1>{product.name.toUpperCase()}</h1><Rating value={product.rating || 0} />
-          <div className="price"><b>${product.price}</b>{product.oldPrice > product.price && <del>${product.oldPrice}</del>}{product.discount && <em>{product.discount}</em>}</div>
+          <div className="price"><b>${product.price}</b>{product.oldPrice > product.price && <del>${product.oldPrice}</del>}{hasDiscount(product.discount) && <em>{product.discount}</em>}</div>
           <p>{product.description}</p><hr /><label>Select Colors</label>
           <div className="colors">{product.colors.map(value => <button key={value} style={{ backgroundColor: value }} className={color === value ? 'selected' : ''} aria-label={`Color ${value}`} aria-pressed={color === value} onClick={() => setColor(value)}>{color === value ? '✓' : ''}</button>)}</div>
           <hr /><label>Choose Size</label><div className="sizes">{product.sizes.map(value => <button key={value} className={size === value ? 'active' : ''} aria-pressed={size === value} onClick={() => setSize(value)}>{value}</button>)}</div>
@@ -86,7 +90,8 @@ export default function ProductDetail() {
       <div className="tabs">{[['details', 'Product Details'], ['reviews', 'Rating & Reviews']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>)}</div>
       {tab === 'details' ? <div className="placeholder"><p>{product.description}</p><p>Brand: {product.brand} · Style: {product.style}</p></div> : <section className="reviews"><div className="review-head"><h2>All Reviews ({reviews.length})</h2></div>
         {reviewsError ? <p role="alert">{reviewsError}</p> : !reviews.length ? <p>No reviews yet.</p> : <div className="review-grid">{reviews.map(review => <ReviewCard key={review._id} review={review} />)}</div>}</section>}
-      {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>${p.price}</b>{p.oldPrice > p.price && <del>${p.oldPrice}</del>}{p.discount && <em>{p.discount}</em>}</div></article>)}</div></section>}
+      {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>${p.price}</b>{p.oldPrice > p.price && <del>${p.oldPrice}</del>}{hasDiscount(p.discount) && <em>{p.discount}</em>}</div></article>)}</div></section>}
     </>}
   </main><Footer /></>;
 }
+
