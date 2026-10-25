@@ -37,6 +37,8 @@ const colors = [
   "#000000",
 ];
 
+const colorNames = ["Green", "Red", "Yellow", "Orange", "Cyan", "Blue", "Purple", "Pink", "White", "Black"];
+
 const sizes = [
   "XX-Small",
   "X-Small",
@@ -95,72 +97,10 @@ function FilterContent({
   setMinPrice,
   setMaxPrice,
 
-  setPriceDragging,
 
   applyFilters,
   clearFilters,
 }) {
-  const handlePriceMouseDown = (event, type) => {
-    event.stopPropagation();
-
-    setPriceDragging(type);
-  };
-
-  const handleTrackMouseDown = (event) => {
-    const track = event.currentTarget;
-
-    const rect = track.getBoundingClientRect();
-
-    let percentage =
-      (event.clientX - rect.left) / rect.width;
-
-    percentage = Math.max(
-      0,
-      Math.min(1, percentage)
-    );
-
-    const value = Math.round(
-      PRICE_MIN +
-        percentage *
-          (PRICE_MAX - PRICE_MIN)
-    );
-
-    const distanceFromMin = Math.abs(
-      value - minPrice
-    );
-
-    const distanceFromMax = Math.abs(
-      value - maxPrice
-    );
-
-    if (
-      distanceFromMin <=
-      distanceFromMax
-    ) {
-      setMinPrice(
-        Math.min(value, maxPrice - 1)
-      );
-
-      setPriceDragging("min");
-    } else {
-      setMaxPrice(
-        Math.max(value, minPrice + 1)
-      );
-
-      setPriceDragging("max");
-    }
-  };
-
-  const minPercentage =
-    ((minPrice - PRICE_MIN) /
-      (PRICE_MAX - PRICE_MIN)) *
-    100;
-
-  const maxPercentage =
-    ((maxPrice - PRICE_MIN) /
-      (PRICE_MAX - PRICE_MIN)) *
-    100;
-
   return (
     <div className="shop-filter-content">
       <div className="shop-filter-heading">
@@ -222,59 +162,18 @@ function FilterContent({
         </div>
 
         <div className="shop-price-filter">
-
-          {/* Existing price track */}
-          <div
-            className="shop-price-track"
-            onMouseDown={handleTrackMouseDown}
-          >
-            {/* Existing active element */}
-            <div
-              className="shop-price-active"
-              style={{
-                left: `${minPercentage}%`,
-                right: `${100 - maxPercentage}%`,
-              }}
-            />
-
-            {/* Existing left dot */}
-            <span
-              className="shop-price-dot shop-price-left"
-              style={{
-                left: `${minPercentage}%`,
-                cursor: "grab",
-              }}
-              onMouseDown={(event) =>
-                handlePriceMouseDown(
-                  event,
-                  "min"
-                )
-              }
-            />
-
-            {/* Existing right dot */}
-            <span
-              className="shop-price-dot shop-price-right"
-              style={{
-                left: `${maxPercentage}%`,
-                cursor: "grab",
-              }}
-              onMouseDown={(event) =>
-                handlePriceMouseDown(
-                  event,
-                  "max"
-                )
-              }
-            />
-          </div>
-
-          {/* Existing price values */}
-          <div className="shop-price-values">
-            <span>${minPrice}</span>
-
-            <span>${maxPrice}</span>
-          </div>
-
+          <label className="shop-price-control">
+            <span>Minimum price <strong>${minPrice}</strong></span>
+            <input type="range" aria-label="Minimum price" aria-valuetext={`$${minPrice}`}
+              min={PRICE_MIN} max={maxPrice - 1} step="1" value={minPrice}
+              onChange={event => setMinPrice(Math.max(PRICE_MIN, Math.min(Number(event.target.value), maxPrice - 1)))} />
+          </label>
+          <label className="shop-price-control">
+            <span>Maximum price <strong>${maxPrice}</strong></span>
+            <input type="range" aria-label="Maximum price" aria-valuetext={`$${maxPrice}`}
+              min={minPrice + 1} max={PRICE_MAX} step="1" value={maxPrice}
+              onChange={event => setMaxPrice(Math.min(PRICE_MAX, Math.max(Number(event.target.value), minPrice + 1)))} />
+          </label>
         </div>
       </div>
 
@@ -288,10 +187,13 @@ function FilterContent({
         </div>
 
         <div className="shop-color-grid">
-          {colors.map((color) => (
+          {colors.map((color, index) => (
             <button
               key={color}
               className="shop-color"
+              type="button"
+              aria-label={`Filter by ${colorNames[index]}`}
+              aria-pressed={selectedColor === color}
               style={{
                 backgroundColor: color,
               }}
@@ -306,6 +208,7 @@ function FilterContent({
               {selectedColor === color && (
                 <Check
                   size={17}
+                  aria-hidden="true"
                   color={
                     color === "#ffffff" ||
                     color === "#f5dd06"
@@ -421,12 +324,7 @@ function FilterContent({
   );
 }
 
-function SortDropdown({
-  sortBy,
-  setSortBy,
-  sortOpen,
-  setSortOpen,
-}) {
+function SortDropdown({ sortBy, setSortBy }) {
   const options = [
     {
       value: "newest",
@@ -454,78 +352,13 @@ function SortDropdown({
     },
   ];
 
-  const currentLabel =
-    options.find(
-      (option) =>
-        option.value === sortBy
-    )?.label || "Most Popular";
-
   return (
-    <div
-      className="shop-sort-text"
-      style={{
-        position: "relative",
-        cursor: "pointer",
-      }}
-      onClick={() =>
-        setSortOpen(!sortOpen)
-      }
-    >
-      Sort by:
-
-      <strong>
-        {currentLabel}
-      </strong>
-
-      <ChevronDown size={15} />
-
-      {sortOpen && (
-        <div
-          style={{
-            position: "absolute",
-            top: "25px",
-            right: 0,
-            minWidth: "180px",
-            background: "#fff",
-            border: "1px solid #eee",
-            borderRadius: "8px",
-            padding: "6px",
-            zIndex: 100,
-            boxShadow:
-              "0 8px 20px rgba(0,0,0,0.12)",
-          }}
-          onClick={(event) =>
-            event.stopPropagation()
-          }
-        >
-          {options.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => {
-                setSortBy(option.value);
-                setSortOpen(false);
-              }}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "9px 10px",
-                border: "none",
-                background:
-                  sortBy === option.value
-                    ? "#f5f5f5"
-                    : "transparent",
-                textAlign: "left",
-                cursor: "pointer",
-                borderRadius: "5px",
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
+    <label className="shop-sort-text">
+      <span>Sort by:</span>
+      <select aria-label="Sort products" value={sortBy} onChange={event => setSortBy(event.target.value)}>
+        {options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+    </label>
   );
 }
 
@@ -608,8 +441,6 @@ export default function Shop() {
   const [maxPrice, setMaxPrice] =
     useState(PRICE_MAX);
 
-  const [priceDragging, setPriceDragging] =
-    useState(null);
 
   /*
   |--------------------------------------------------------------------------
@@ -636,8 +467,6 @@ export default function Shop() {
   const [sortBy, setSortBy] =
     useState(initialSort);
 
-  const [sortOpen, setSortOpen] =
-    useState(false);
 
   /*
   |--------------------------------------------------------------------------
@@ -669,96 +498,6 @@ export default function Shop() {
     setSortBy(location.pathname === '/new-arrivals' ? 'newest' : query.get('sort') || 'popular');
     setCurrentPage(1);
   }, [location.search, location.pathname]);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Price dragging
-  |--------------------------------------------------------------------------
-  */
-
-  useEffect(() => {
-    if (!priceDragging) {
-      return;
-    }
-
-    const handleMouseMove = (event) => {
-      const track =
-        document.querySelector(
-          ".shop-price-track"
-        );
-
-      if (!track) {
-        return;
-      }
-
-      const rect =
-        track.getBoundingClientRect();
-
-      let percentage =
-        (event.clientX - rect.left) /
-        rect.width;
-
-      percentage = Math.max(
-        0,
-        Math.min(1, percentage)
-      );
-
-      const value = Math.round(
-        PRICE_MIN +
-          percentage *
-            (PRICE_MAX - PRICE_MIN)
-      );
-
-      if (priceDragging === "min") {
-        setMinPrice(
-          Math.min(
-            value,
-            maxPrice - 1
-          )
-        );
-      }
-
-      if (priceDragging === "max") {
-        setMaxPrice(
-          Math.max(
-            value,
-            minPrice + 1
-          )
-        );
-      }
-    };
-
-    const handleMouseUp = () => {
-      setPriceDragging(null);
-    };
-
-    document.addEventListener(
-      "mousemove",
-      handleMouseMove
-    );
-
-    document.addEventListener(
-      "mouseup",
-      handleMouseUp
-    );
-
-    return () => {
-      document.removeEventListener(
-        "mousemove",
-        handleMouseMove
-      );
-
-      document.removeEventListener(
-        "mouseup",
-        handleMouseUp
-      );
-    };
-  }, [
-    priceDragging,
-    minPrice,
-    maxPrice,
-    PRICE_MAX,
-  ]);
 
   /*
   |--------------------------------------------------------------------------
@@ -851,22 +590,6 @@ export default function Shop() {
     });
   };
 
-  /*
-  |--------------------------------------------------------------------------
-  | Price percentages
-  |--------------------------------------------------------------------------
-  */
-
-  const minPricePercentage =
-    ((minPrice - PRICE_MIN) /
-      (PRICE_MAX - PRICE_MIN)) *
-    100;
-
-  const maxPricePercentage =
-    ((maxPrice - PRICE_MIN) /
-      (PRICE_MAX - PRICE_MIN)) *
-    100;
-
   return (
     <div className="shop-page">
       <Header />
@@ -930,10 +653,6 @@ export default function Shop() {
                 setMaxPrice
               }
 
-              setPriceDragging={
-                setPriceDragging
-              }
-
               applyFilters={
                 applyFilters
               }
@@ -974,12 +693,6 @@ export default function Shop() {
                 <SortDropdown
                   sortBy={sortBy}
                   setSortBy={value => { setSortBy(value); setCurrentPage(1); }}
-                  sortOpen={
-                    sortOpen
-                  }
-                  setSortOpen={
-                    setSortOpen
-                  }
                 />
 
                 <button
@@ -1244,10 +957,6 @@ export default function Shop() {
               }
               setMaxPrice={
                 setMaxPrice
-              }
-
-              setPriceDragging={
-                setPriceDragging
               }
 
               applyFilters={
