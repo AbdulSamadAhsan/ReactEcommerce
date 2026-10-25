@@ -8,6 +8,7 @@ import './Account.css';
 import AccountSettings from './AccountSettings';
 import DeleteAccount from './DeleteAccount';
 import OrderProductRating, { reviewKey } from './OrderProductRating';
+import { paymentLabel } from '../orderPaymentLabel';
 
 
 
@@ -15,7 +16,6 @@ const isPast = order => ['delivered', 'cancelled'].includes(order.status);
 const labels = {awaiting_payment:'Awaiting payment',pending:'Order received',processing:'Preparing your order',shipped:'On the way',delivered:'Delivered',cancelled:'Cancelled'};
 const money = (value,currency='USD') => new Intl.NumberFormat('en-US',{style:'currency',currency}).format(Number(value||0));
 const date = value => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}) : 'Date unavailable';
-const paymentLabel = order => order.paymentStatus==='paid'?'Paid':order.paymentStatus==='expired'?'Payment expired':order.status==='cancelled'?'Not charged':order.paymentMethod==='cash_on_delivery'?'Pay on delivery':'Payment pending';
 
 function OrderCard({order, reviews, onReviewSaved, onUnauthorized}) {
   const currency=order.currency||'USD', stages=['pending','processing','shipped','delivered'];
