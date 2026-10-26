@@ -31,12 +31,46 @@ const mount = () => render(<MemoryRouter><Checkout /></MemoryRouter>);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  api.getCurrentUser.mockReturnValue({ _id: 'qa', firstName: 'Test', lastName: 'Customer' });
   sessionStorage.clear();
   window.history.replaceState({}, '', '/checkout');
   api.getCart.mockResolvedValue(freshCart);
   api.startStripeCheckout.mockResolvedValue({ sessionId: 'cs_test_second', clientSecret: 'test-placeholder' });
 });
 afterEach(cleanup);
+
+it('allows a guest to enter shipping details and place a cash-on-delivery order', async () => {
+  api.getCurrentUser.mockReturnValue(null);
+  const guestOrder = { _id: 'guest-order', total: 183.2, currency: 'USD', paymentMethod: 'cash_on_delivery', status: 'pending' };
+  api.createOrder.mockResolvedValue(guestOrder);
+  api.saveCart.mockResolvedValue({ items: [] });
+  mount();
+  await screen.findByRole('heading', { name: 'Shipping Details' });
+  expect(screen.getByText(/Checking out as a guest/)).toBeTruthy();
+  for (const [name, value] of Object.entries(shipping)) {
+    fireEvent.change(document.getElementById('shipping-' + name), { target: { value } });
+  }
+  fireEvent.click(screen.getByRole('button', { name: 'Place Order' }));
+  await screen.findByRole('heading', { name: 'Thank you for your order' });
+  expect(api.createOrder.mock.calls[0][0].shipping).toEqual(shipping);
+  expect(api.saveCart).toHaveBeenCalledWith({ revision: freshCart.revision }, [], '');
+  expect(JSON.parse(sessionStorage.getItem('shopco.checkout.guest')).order._id).toBe('guest-order');
+  expect(api.logout).not.toHaveBeenCalled();
+});
+
+it('offers Stripe checkout to guests with the same saved shipping details', async () => {
+  api.getCurrentUser.mockReturnValue(null);
+  mount();
+  await screen.findByRole('heading', { name: 'Shipping Details' });
+  for (const [name, value] of Object.entries(shipping)) {
+    fireEvent.change(document.getElementById('shipping-' + name), { target: { value } });
+  }
+  fireEvent.click(screen.getByRole('radio', { name: 'Card via Stripe' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Continue to payment' }));
+  await screen.findByText('Stripe payment form');
+  expect(api.startStripeCheckout.mock.calls[0][0].shipping).toEqual(shipping);
+  expect(api.startStripeCheckout.mock.calls[0][0].paymentMethod).toBe('stripe');
+});
 
 describe('checkout after a completed order', () => {
   it('opens a new checkout and uses fresh items, totals, coupon and idempotency key', async () => {

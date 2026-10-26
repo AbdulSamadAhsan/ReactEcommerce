@@ -46,7 +46,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/checkout" element={<RequireAuth><Checkout /></RequireAuth>} />
+            <Route path="/checkout" element={<Checkout />} />
             <Route path="*" element={<Home />} />
             {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>

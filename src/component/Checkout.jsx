@@ -23,7 +23,7 @@ function readAttempt(key) {
 export default function Checkout() {
   const navigate = useNavigate();
   const user = getCurrentUser();
-  const storageKey = `shopco.checkout.${user?._id || 'user'}`;
+  const storageKey = `shopco.checkout.${user?._id || 'guest'}`;
   const [attempt, setAttempt] = useState(() => readAttempt(storageKey));
   const [form, setForm] = useState(() => {
     const saved = readAttempt(storageKey);
@@ -185,6 +185,7 @@ export default function Checkout() {
   return <><Header /><main className="checkout-page"><div className="checkout-container">
     <div className="checkout-breadcrumb"><Link to="/">Home</Link><span>Checkout</span></div>
     <h1 className="checkout-title">{order ? 'ORDER CONFIRMED' : 'CHECKOUT'}</h1>
+    {!user && !order && <p>Checking out as a guest. No account required. <Link to="/login" state={{ from: '/checkout' }}>Log in</Link> if you already have an account.</p>}
     {order ? <section className="checkout-card" role="status">
       <h2>Thank you for your order</h2>
       <p>Order number: <strong>{order._id}</strong></p>

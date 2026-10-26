@@ -61,27 +61,32 @@ export async function addCartItem(line) {
   return saveCart(cart, items);
 }
 
+function checkoutHeaders() {
+  const token = getAuthToken();
+  return { ...cartHeaders(), ...(token && { Authorization: `Bearer ${token}` }) };
+}
+
 export async function createOrder(body, idempotencyKey) {
   return (await api('/orders', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${getAuthToken()}`, 'Idempotency-Key': idempotencyKey },
+    headers: { ...checkoutHeaders(), 'Idempotency-Key': idempotencyKey },
     body,
   })).data;
 }
 
 export async function startStripeCheckout(body, idempotencyKey) {
   return (await api('/pay/checkout', {
-    method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}`, 'Idempotency-Key': idempotencyKey }, body,
+    method: 'POST', headers: { ...checkoutHeaders(), 'Idempotency-Key': idempotencyKey }, body,
   })).data;
 }
 export async function getStripeCheckout(sessionId) {
   return (await api('/pay/checkout/' + encodeURIComponent(sessionId), {
-    headers: { Authorization: `Bearer ${getAuthToken()}` },
+    headers: checkoutHeaders(),
   })).data;
 }
 export async function cancelStripeCheckout(sessionId) {
   return (await api('/pay/checkout/' + encodeURIComponent(sessionId) + '/cancel', {
-    method: 'POST', headers: { Authorization: `Bearer ${getAuthToken()}` },
+    method: 'POST', headers: checkoutHeaders(),
   })).data;
 }
 
