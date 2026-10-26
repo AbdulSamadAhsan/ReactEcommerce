@@ -1,4 +1,5 @@
 import { hasDiscount } from '../discount';
+import { useCurrency } from '../CurrencyContext';
 import React, { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
@@ -101,6 +102,7 @@ function FilterContent({
   applyFilters,
   clearFilters,
 }) {
+  const { money } = useCurrency();
   return (
     <div className="shop-filter-content">
       <div className="shop-filter-heading">
@@ -163,14 +165,14 @@ function FilterContent({
 
         <div className="shop-price-filter">
           <label className="shop-price-control">
-            <span>Minimum price <strong>${minPrice}</strong></span>
-            <input type="range" aria-label="Minimum price" aria-valuetext={`$${minPrice}`}
+            <span>Minimum price <strong>{money(minPrice)}</strong></span>
+            <input type="range" aria-label="Minimum price" aria-valuetext={money(minPrice)}
               min={PRICE_MIN} max={maxPrice - 1} step="1" value={minPrice}
               onChange={event => setMinPrice(Math.max(PRICE_MIN, Math.min(Number(event.target.value), maxPrice - 1)))} />
           </label>
           <label className="shop-price-control">
-            <span>Maximum price <strong>${maxPrice}</strong></span>
-            <input type="range" aria-label="Maximum price" aria-valuetext={`$${maxPrice}`}
+            <span>Maximum price <strong>{money(maxPrice)}</strong></span>
+            <input type="range" aria-label="Maximum price" aria-valuetext={money(maxPrice)}
               min={minPrice + 1} max={PRICE_MAX} step="1" value={maxPrice}
               onChange={event => setMaxPrice(Math.min(PRICE_MAX, Math.max(Number(event.target.value), minPrice + 1)))} />
           </label>
@@ -363,6 +365,7 @@ function SortDropdown({ sortBy, setSortBy }) {
 }
 
 export default function Shop() {
+  const { money } = useCurrency();
   const [PRICE_MAX, setPriceLimit] = useState(1);
   const [priceRangeError, setPriceRangeError] = useState("");
   const location = useLocation();
@@ -751,15 +754,12 @@ export default function Shop() {
 
                     <div className="shop-product-price">
                       <strong>
-                        ${product.price}
+                        {money(product.price)}
                       </strong>
 
                       {Number(product.oldPrice) > 0 && (
                         <del>
-                          $
-                          {
-                            product.oldPrice
-                          }
+                          {money(product.oldPrice)}
                         </del>
                       )}
 

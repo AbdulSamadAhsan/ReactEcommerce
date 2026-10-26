@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useCurrency } from '../CurrencyContext';
+import { formatMoney } from '../currency';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeftRight, LoaderCircle } from 'lucide-react';
 import Header from './Header';
@@ -12,7 +14,6 @@ const fields = [
   ['address', 'Street Address', 'street-address'],
   ['state', 'State / Province', 'address-level1'], ['zip', 'ZIP / Postal Code', 'postal-code'],
 ];
-const money = value => '$' + Number(value || 0).toFixed(2);
 const orderDateTime = value => value && Number.isFinite(Date.parse(value))
   ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
   : null;
@@ -21,6 +22,7 @@ function readAttempt(key) {
 }
 
 export default function Checkout() {
+  const { currency: storeCurrency, exchangeRate } = useCurrency();
   const navigate = useNavigate();
   const user = getCurrentUser();
   const storageKey = `shopco.checkout.${user?._id || 'guest'}`;
@@ -71,7 +73,7 @@ export default function Checkout() {
       if (e.name !== 'AbortError') setCartError(e.message);
     });
     return () => controller.abort();
-  }, [refresh, order, returnSession, submittedRevision, storageKey]);
+  }, [refresh, order, returnSession, submittedRevision, storageKey, storeCurrency, exchangeRate]);
 
   async function submit(event) {
     event.preventDefault();
@@ -89,6 +91,8 @@ export default function Checkout() {
             shipping: Object.fromEntries(fields.map(([name]) => [name, form[name].trim()])),
             promoCode: cart.promoCode || '',
             paymentMethod,
+            currency: cart.totals.currency || 'USD',
+            exchangeRate: cart.totals.exchangeRate || 1,
             ...(paymentMethod === 'stripe' && { checkoutUi: 'elements' }),
           },
         };
@@ -182,6 +186,7 @@ export default function Checkout() {
 
   const items = cart?.items || [];
   const totals = cart?.totals;
+  const money = value => formatMoney(value, order?.currency || totals?.currency || 'USD');
   return <><Header /><main className="checkout-page"><div className="checkout-container">
     <div className="checkout-breadcrumb"><Link to="/">Home</Link><span>Checkout</span></div>
     <h1 className="checkout-title">{order ? 'ORDER CONFIRMED' : 'CHECKOUT'}</h1>

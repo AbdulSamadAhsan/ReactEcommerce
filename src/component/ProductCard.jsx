@@ -1,4 +1,5 @@
 import { hasDiscount } from '../discount';
+import { useCurrency } from '../CurrencyContext';
 import React from 'react'
 import {
   Search,
@@ -17,6 +18,7 @@ import { Link } from "react-router-dom";
 import Rating from './Rating';
 import { discountLabel } from '../productPricing';
 export default function ProductCard({item}) {
+  const { money } = useCurrency();
   return (
  <>
     <article className="product-card">
@@ -27,8 +29,8 @@ export default function ProductCard({item}) {
       </Link>
       <Rating value={item.rating} />
       <div className="price-row">
-        <strong>${item.price}</strong>
-        {Number(item.oldPrice) > 0 && <del>${item.oldPrice}</del>}
+        <strong>{money(item.price)}</strong>
+        {Number(item.oldPrice) > 0 && <del>{money(item.oldPrice)}</del>}
         {hasDiscount(item.discount) && <span className="discount">{item.discount}</span>}
       </div>
     </article>

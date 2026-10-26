@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useCurrency } from '../CurrencyContext';
+import { formatMoney } from '../currency';
 import { Link, Navigate } from 'react-router-dom';
 import { Minus, Plus, Trash2, ArrowRight, Tag, X } from 'lucide-react';
 import { getCart, saveCart } from '../api';
@@ -7,8 +9,8 @@ import Footer from './Footer';
 import Swal from 'sweetalert2';
 import './Cart.css';
 
-const money = value => (Number(value) < 0 ? '-$' : '$') + Math.abs(Number(value)).toFixed(2);
 export default function Cart() {
+  const { currency: storeCurrency, exchangeRate } = useCurrency();
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -22,7 +24,7 @@ export default function Cart() {
       .catch(e => { if (e.name !== 'AbortError') setError(e.message); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [retry]);
+  }, [retry, storeCurrency, exchangeRate]);
   async function update(items, code = cart.promoCode) {
     setBusy(true); setError('');
     try { const c = await saveCart(cart, items, items.length ? code : ''); setCart(c); setPromo(c.promoCode); }
@@ -70,6 +72,7 @@ export default function Cart() {
     } finally { confirmingRemoval.current = false; }
   }
   const totals = cart?.totals;
+  const money = value => formatMoney(value, cart?.currency || totals?.currency || 'USD');
   if (!loading && cart?.items.length === 0) return <Navigate to="/shop" replace />;
   return <div className="app"><Header /><main className="page-shell main-content"><div className="breadcrumb"><Link to="/">Home</Link><span className="active">Cart</span></div><div className="cart-title-row"><h1>YOUR CART</h1>{!loading && cart?.items.length > 0 && <button type="button" className="clear-cart-button" disabled={busy} onClick={() => confirmRemoval()}><Trash2 size={18} aria-hidden="true" /><span>Clear cart</span></button>}</div>
     {error && <p role="alert">{error} <button disabled={busy} onClick={() => setRetry(n => n + 1)}>Refresh cart</button></p>}

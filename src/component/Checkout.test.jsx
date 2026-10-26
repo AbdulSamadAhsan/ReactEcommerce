@@ -72,6 +72,20 @@ it('offers Stripe checkout to guests with the same saved shipping details', asyn
   expect(api.startStripeCheckout.mock.calls[0][0].paymentMethod).toBe('stripe');
 });
 
+it('displays the quoted currency and sends its rate with the order', async () => {
+  api.getCurrentUser.mockReturnValue(null);
+  api.getCart.mockResolvedValue({ ...freshCart, currency: 'PKR', items: freshCart.items.map(item => ({ ...item, price: 40600 })), totals: { subtotal: 40600, discount: 0, gst: 6496, deliveryFee: 4200, total: 51296, currency: 'PKR', exchangeRate: 280 } });
+  api.createOrder.mockResolvedValue({ _id: 'pkr-order', total: 51296, currency: 'PKR', status: 'pending', paymentMethod: 'cash_on_delivery' });
+  api.saveCart.mockResolvedValue({ items: [] });
+  mount();
+  expect(await screen.findByText(/PKR.*51,296.00/)).toBeTruthy();
+  for (const [name, value] of Object.entries(shipping)) fireEvent.change(document.getElementById('shipping-' + name), { target: { value } });
+  fireEvent.click(screen.getByRole('button', { name: 'Place Order' }));
+  await screen.findByRole('heading', { name: 'Thank you for your order' });
+  expect(api.createOrder.mock.calls[0][0].currency).toBe('PKR');
+  expect(api.createOrder.mock.calls[0][0].exchangeRate).toBe(280);
+});
+
 describe('checkout after a completed order', () => {
   it('opens a new checkout and uses fresh items, totals, coupon and idempotency key', async () => {
     sessionStorage.setItem(key, JSON.stringify(completed));
