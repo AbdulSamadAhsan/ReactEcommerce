@@ -25,7 +25,7 @@ function readCartCount() {
 }
 
 export default function Header() {
-  const { currency, exchangeRate } = useCurrency();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -141,7 +141,6 @@ export default function Header() {
       <div className="store-currency-bar">
         <div className="shell store-currency-info">
           <span>Prices in {currency}</span>
-          {currency === 'PKR' && <span>Exchange rate: 1 USD = {new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(exchangeRate)} PKR</span>}
         </div>
       </div>
     </>
