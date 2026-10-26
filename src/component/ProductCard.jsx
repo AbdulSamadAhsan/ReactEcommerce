@@ -21,8 +21,10 @@ export default function ProductCard({item}) {
  <>
     <article className="product-card">
     
-      <div className="product-image-wrap"><img src={item.image} alt={item.name} /></div>
-               <Link to={`/products/${item._id}`}> <h3>{item.name}</h3></Link>
+      <Link to={`/products/${item._id}`} aria-label={`View ${item.name}`}>
+        <div className="product-image-wrap"><img src={item.image} alt={item.name} /></div>
+        <h3>{item.name}</h3>
+      </Link>
       <Rating value={item.rating} />
       <div className="price-row">
         <strong>${item.price}</strong>
