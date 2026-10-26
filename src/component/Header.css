@@ -1,20 +1,3 @@
-.store-currency-bar {
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  background: #fafafa;
-  color: #525252;
-  font-size: 12px;
-}
-
-.store-currency-info {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
 .cart-icon-link {
   position: relative;
   display: inline-flex;
