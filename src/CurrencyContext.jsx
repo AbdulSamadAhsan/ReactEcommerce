@@ -18,16 +18,16 @@ export function CurrencyProvider({ children }) {
       if (loading) return;
       loading = true;
       try {
-        const { data } = await api('/store-settings', { signal: controller.signal });
+        const { data } = await api('/store-settings', { signal: controller.signal, cache: 'no-store' });
         if (!['USD', 'PKR'].includes(data.currency) || !Number.isFinite(data.exchangeRate) || data.exchangeRate <= 0) throw new Error();
-        if (!controller.signal.aborted) { setSettings(data); setError(''); }
+        if (!controller.signal.aborted) { setSettings(previous => previous?.currency === data.currency && previous.exchangeRate === data.exchangeRate ? previous : data); setError(''); }
       } catch {
         if (!controller.signal.aborted) setError('Store prices are unavailable. Please try again.');
       } finally { loading = false; }
     };
     refresh();
     window.addEventListener('focus', refresh);
-    const timer = window.setInterval(refresh, 60000);
+    const timer = window.setInterval(refresh, 5000);
     return () => { controller.abort(); window.clearInterval(timer); window.removeEventListener('focus', refresh); };
   }, [retry]);
   return <CurrencyContext.Provider value={settings || defaultCurrency}>
