@@ -9,7 +9,19 @@ import {
   X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAuthToken, getCurrentUser, logout } from '../api';
+import { getAuthToken, getCurrentUser, getCart, logout } from '../api';
+
+function readCartCount() {
+  try {
+    const items = JSON.parse(localStorage.getItem('cart') || '[]');
+    return Array.isArray(items) ? items.reduce((total, item) => {
+      const quantity = Number(item.quantity);
+      return total + (Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 0);
+    }, 0) : 0;
+  } catch {
+    return 0;
+  }
+}
 
 export default function Header() {
   const navigate = useNavigate();
@@ -17,6 +29,25 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [promoOpen, setPromoOpen] = useState(true);
   const [user, setUser] = useState(getCurrentUser());
+  const [cartCount, setCartCount] = useState(readCartCount);
+  React.useEffect(() => {
+    const controller = new AbortController();
+    const update = () => setCartCount(readCartCount());
+    const sync = () => { getCart(controller.signal).catch(() => {}); };
+    const onStorage = event => {
+      if (event.key === 'cart' || event.key === null) update();
+    };
+    window.addEventListener('shopco:cart', update);
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('focus', sync);
+    sync();
+    return () => {
+      controller.abort();
+      window.removeEventListener('shopco:cart', update);
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('focus', sync);
+    };
+  }, []);
   React.useEffect(() => { const update = () => setUser(getCurrentUser()); window.addEventListener('shopco:auth', update); return () => window.removeEventListener('shopco:auth', update); }, []);
 
   const closeMenu = () => setMenuOpen(false);
@@ -94,8 +125,9 @@ export default function Header() {
             <Search />
           </button>
 
-          <Link to="/cart" aria-label="Shopping cart">
-            <ShoppingCart />
+          <Link to="/cart" className="cart-icon-link" aria-label={`Shopping cart, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}>
+            <ShoppingCart aria-hidden="true" />
+            {cartCount > 0 && <span className="cart-count-badge" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}
           </Link>
 
           <Link to="/account" aria-label="Account">
