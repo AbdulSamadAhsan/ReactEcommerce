@@ -1,5 +1,6 @@
 import { hasDiscount } from '../discount';
 import { useCurrency } from '../CurrencyContext';
+import { sizePricing, catalogPricing } from '../sizePricing';
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Minus, Plus, ChevronRight, ArrowLeft } from 'lucide-react';
@@ -71,6 +72,8 @@ export default function ProductDetail() {
     finally { setBusy(false); }
   }
 
+  const selectedPrice = sizePricing(product, size);
+
   return <><Header /><main className="shell">
     <button type="button" className="product-back-button" onClick={goBack} aria-label="Go back to the previous page"><ArrowLeft size={18} aria-hidden="true" /><span>Back</span></button>
     <div className="crumb"><Link to="/">Home</Link><ChevronRight /><Link to="/shop">Shop</Link>{product && <><ChevronRight /><b>{product.category}</b></>}</div>
@@ -80,7 +83,7 @@ export default function ProductDetail() {
           <button key={src} className={image === src ? 'active' : ''} onClick={() => setImage(src)} aria-label={`View image ${index + 1}`}><img src={src} alt={`${product.name} view ${index + 1}`} /></button>)}</div>
           <div className="mainimg"><img src={image} alt={product.name} /></div></div>
         <div className="info"><h1>{product.name.toUpperCase()}</h1><Rating value={product.rating || 0} />
-          <div className="price"><b>{money(product.price)}</b>{product.oldPrice > product.price && <del>{money(product.oldPrice)}</del>}{hasDiscount(product.discount) && <em>{product.discount}</em>}</div>
+          <div className="price" aria-live="polite"><b>{money(selectedPrice.price)}</b>{selectedPrice.oldPrice > selectedPrice.price && <del>{money(selectedPrice.oldPrice)}</del>}{hasDiscount(product.discount) && <em>{product.discount}</em>}</div>
           <p>{product.description}</p><hr /><label>Select Colors</label>
           <div className="colors">{product.colors.map(value => <button key={value} style={{ backgroundColor: value }} className={color === value ? 'selected' : ''} aria-label={`Color ${value}`} aria-pressed={color === value} onClick={() => setColor(value)}>{color === value ? '✓' : ''}</button>)}</div>
           <hr /><label>Choose Size</label><div className="sizes">{product.sizes.map(value => <button key={value} className={size === value ? 'active' : ''} aria-pressed={size === value} onClick={() => setSize(value)}>{value}</button>)}</div>
@@ -93,7 +96,7 @@ export default function ProductDetail() {
       <div className="tabs">{[['details', 'Product Details'], ['reviews', 'Rating & Reviews']].map(([key, label]) => <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>)}</div>
       {tab === 'details' ? <div className="placeholder"><p>{product.description}</p><p>Brand: {product.brand} · Style: {product.style}</p></div> : <section className="reviews"><div className="review-head"><h2>All Reviews ({reviews.length})</h2></div>
         {reviewsError ? <p role="alert">{reviewsError}</p> : !reviews.length ? <p>No reviews yet.</p> : <div className="review-grid">{reviews.map(review => <ReviewCard key={review._id} review={review} />)}</div>}</section>}
-      {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>{money(p.price)}</b>{p.oldPrice > p.price && <del>{money(p.oldPrice)}</del>}{hasDiscount(p.discount) && <em>{p.discount}</em>}</div></article>)}</div></section>}
+      {!!related.length && <section className="related"><h2>YOU MIGHT ALSO LIKE</h2><div className="related-grid">{related.map(p => { const price = catalogPricing(p); return <article key={p._id}><Link to={`/products/${p._id}`}><div className="rimg"><img src={p.image} alt={p.name} /></div><h3>{p.name}</h3></Link><Rating value={p.rating} /><div className="rp"><b>{price.varies ? 'From ' : ''}{money(price.price)}</b>{price.oldPrice > price.price && <del>{money(price.oldPrice)}</del>}{hasDiscount(p.discount) && <em>{p.discount}</em>}</div></article>; })}</div></section>}
     </>}
   </main><Footer /></>;
 }

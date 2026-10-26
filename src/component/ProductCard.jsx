@@ -1,5 +1,6 @@
 import { hasDiscount } from '../discount';
 import { useCurrency } from '../CurrencyContext';
+import { catalogPricing } from '../sizePricing';
 import React from 'react'
 import {
   Search,
@@ -19,6 +20,7 @@ import Rating from './Rating';
 import { discountLabel } from '../productPricing';
 export default function ProductCard({item}) {
   const { money } = useCurrency();
+  const price = catalogPricing(item);
   return (
  <>
     <article className="product-card">
@@ -29,8 +31,8 @@ export default function ProductCard({item}) {
       </Link>
       <Rating value={item.rating} />
       <div className="price-row">
-        <strong>{money(item.price)}</strong>
-        {Number(item.oldPrice) > 0 && <del>{money(item.oldPrice)}</del>}
+        <strong>{price.varies ? 'From ' : ''}{money(price.price)}</strong>
+        {Number(price.oldPrice) > 0 && <del>{money(price.oldPrice)}</del>}
         {hasDiscount(item.discount) && <span className="discount">{item.discount}</span>}
       </div>
     </article>

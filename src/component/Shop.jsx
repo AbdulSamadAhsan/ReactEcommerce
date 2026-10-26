@@ -1,5 +1,6 @@
 import { hasDiscount } from '../discount';
 import { useCurrency } from '../CurrencyContext';
+import { catalogPricing } from '../sizePricing';
 import React, { useEffect, useRef, useState } from "react";
 import {
   ChevronDown,
@@ -726,7 +727,7 @@ export default function Shop() {
             {priceRangeError && <p role="alert">{priceRangeError} <button onClick={() => setRetry(n => n + 1)}>Try again</button></p>}
             <div className="shop-products-grid" aria-busy={loading}>
               {!loading && currentProducts.map(
-                (product) => (
+                (product) => { const price = catalogPricing(product); return (
                   <article
                     className="shop-product-card"
                     key={product._id}
@@ -754,12 +755,12 @@ export default function Shop() {
 
                     <div className="shop-product-price">
                       <strong>
-                        {money(product.price)}
+                        {price.varies ? 'From ' : ''}{money(price.price)}
                       </strong>
 
-                      {Number(product.oldPrice) > 0 && (
+                      {Number(price.oldPrice) > 0 && (
                         <del>
-                          {money(product.oldPrice)}
+                          {money(price.oldPrice)}
                         </del>
                       )}
 
@@ -768,7 +769,7 @@ export default function Shop() {
                       )}
                     </div>
                   </article>
-                )
+                ); }
               )}
 
               {!loading && !error && currentProducts.length ===
