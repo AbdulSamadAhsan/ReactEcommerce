@@ -197,6 +197,28 @@ button {
     color: #111;
 }
 
+.cart-size-field {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 5px 0;
+    font-size: 14px;
+    color: #111;
+}
+
+.cart-size-field select {
+    max-width: 100%;
+    padding: 6px 28px 6px 8px;
+    border: 1px solid #dedede;
+    border-radius: 7px;
+    background: #fff;
+    color: #333;
+    font: inherit;
+}
+
+.cart-size-field select:disabled { cursor: default; opacity: .6; }
+
 .item-price {
     font-size: 24px;
     font-weight: 700;

@@ -26,10 +26,22 @@ export default function Cart() {
     return () => controller.abort();
   }, [retry, storeCurrency, exchangeRate]);
   async function update(items, code = cart.promoCode) {
+    if (busy) return;
     setBusy(true); setError('');
     try { const c = await saveCart(cart, items, items.length ? code : ''); setCart(c); setPromo(c.promoCode); }
     catch (e) { setError(e.message); if (e.status === 409) { try { setCart(await getCart()); } catch {} } }
     finally { setBusy(false); }
+  }
+  async function changeSize(index, size) {
+    if (busy || cart.items[index].size === size) return;
+    const items = [];
+    for (const [row, current] of cart.items.entries()) {
+      const item = { ...current, size: row === index ? size : current.size };
+      const match = items.find(line => line.productId === item.productId && line.size === item.size && line.color === item.color);
+      if (match) match.quantity += item.quantity;
+      else items.push(item);
+    }
+    await update(items);
   }
   const confirmingRemoval = useRef(false);
   async function confirmCouponRemoval() {
@@ -80,7 +92,13 @@ export default function Cart() {
       <section className="cart-card">{cart.items.length === 0 ? <div className="empty-cart"><h2>Your cart is empty</h2><p>Add some products to your cart.</p><Link to="/shop" className="continue-shopping">Continue Shopping</Link></div> : <>
         {cart.items.map((item, index) => <div className="cart-item" key={`${item.productId}-${item.size}-${item.color}`}>
           <Link to={`/products/${item.productId}`}>{item.image && <img className="product-image" src={item.image} alt={item.name} />}</Link>
-          <div className="item-copy"><Link to={`/products/${item.productId}`} className="item-title">{item.name}</Link><div className="item-meta"><span>Size:</span> {item.size}</div><div className="item-meta"><span>Color:</span> <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '1px solid #aaa', background: item.color }} /> {item.color}</div><div className="item-price">{money(item.price)}</div>{!item.available && <p role="status">This selection is unavailable. Reduce its quantity or remove it.</p>}</div>
+          <div className="item-copy"><Link to={`/products/${item.productId}`} className="item-title">{item.name}</Link>
+            <label className="cart-size-field"><span>Size:</span><select aria-label={`Size for ${item.name}, ${item.color}, currently ${item.size}`} value={item.size}
+              disabled={busy || !item.availableSizes?.length || (item.availableSizes.length === 1 && item.availableSizes[0] === item.size)} onChange={event => changeSize(index, event.target.value)}>
+              {!item.availableSizes?.includes(item.size) && <option value={item.size} disabled>{item.size}{item.availableSizes?.length ? ' (unavailable)' : ''}</option>}
+              {(item.availableSizes || []).map(size => <option key={size} value={size}>{size}</option>)}
+            </select></label>
+            <div className="item-meta"><span>Color:</span> <span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: '50%', border: '1px solid #aaa', background: item.color }} /> {item.color}</div><div className="item-price" aria-live="polite">{money(item.price)}</div>{!item.available && <p role="status">This selection is unavailable. Choose another size, reduce its quantity or remove it.</p>}</div>
           <button type="button" className="trash" aria-label={`Remove ${item.name}`} disabled={busy} onClick={() => confirmRemoval(index)} style={{ border: 0, background: 'transparent', color: '#ff3333' }}><Trash2 size={22} /></button>
           <div className="quantity-pill"><button className="quantity-button" aria-label={`Decrease quantity of ${item.name}`} disabled={busy || item.quantity <= 1} onClick={() => update(cart.items.map((p, i) => i === index ? { ...p, quantity: p.quantity - 1 } : p))}><Minus size={18} /></button><span aria-live="polite">{item.quantity}</span><button className="quantity-button" aria-label={`Increase quantity of ${item.name}`} disabled={busy || item.quantity >= Math.min(item.stock, 20)} onClick={() => update(cart.items.map((p, i) => i === index ? { ...p, quantity: p.quantity + 1 } : p))}><Plus size={18} /></button></div>
         </div>)}
