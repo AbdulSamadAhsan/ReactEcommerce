@@ -28,7 +28,7 @@ it('sums quantities and updates the badge after cart changes and removal', () =>
   updateCart([{ quantity: 1 }]);
   expect(screen.getByRole('link', { name: 'Shopping cart, 1 item' }).textContent).toBe('1');
   updateCart([]);
-  expect(screen.getByRole('link', { name: 'Shopping cart, 0 items' }).querySelector('.cart-count-badge')).toBeNull();
+  expect(screen.getByRole('link', { name: 'Shopping cart, 0 items' }).textContent).toBe('0');
 });
 
 it('refreshes from the server and caps only the visible badge', async () => {

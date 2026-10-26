@@ -127,7 +127,7 @@ export default function Header() {
 
           <Link to="/cart" className="cart-icon-link" aria-label={`Shopping cart, ${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}>
             <ShoppingCart aria-hidden="true" />
-            {cartCount > 0 && <span className="cart-count-badge" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>}
+            <span className="cart-count-badge" aria-hidden="true">{cartCount > 99 ? '99+' : cartCount}</span>
           </Link>
 
           <Link to="/account" aria-label="Account">
