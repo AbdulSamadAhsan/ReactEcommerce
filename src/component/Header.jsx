@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAuthToken, getCurrentUser, getCart, logout } from '../api';
+import { useCurrency } from '../CurrencyContext';
 
 function readCartCount() {
   try {
@@ -24,6 +25,7 @@ function readCartCount() {
 }
 
 export default function Header() {
+  const { currency, exchangeRate } = useCurrency();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -136,6 +138,12 @@ export default function Header() {
           {getAuthToken() ? <button className="icon-btn" onClick={() => { logout(); navigate('/login', { replace: true }); }} title={user?.name ? `Log out ${user.name}` : 'Log out'}>Log out</button> : <Link to="/login">Log in</Link>}
         </div>
       </header>
+      <div className="store-currency-bar">
+        <div className="shell store-currency-info">
+          <span>Prices in {currency}</span>
+          {currency === 'PKR' && <span>Exchange rate: 1 USD = {new Intl.NumberFormat('en-US', { maximumFractionDigits: 6 }).format(exchangeRate)} PKR</span>}
+        </div>
+      </div>
     </>
   );
 }
