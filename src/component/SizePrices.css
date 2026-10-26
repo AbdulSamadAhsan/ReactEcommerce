@@ -1,0 +1,24 @@
+.size-price-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.size-price-list li {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+  padding: 6px 9px;
+  border: 1px solid #e7e7e7;
+  border-radius: 7px;
+  background: #fafafa;
+  color: #555;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.size-price-list strong { color: #111; font-size: inherit; font-weight: 600; }

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import React from 'react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Shop from './Shop';
 import { api } from '../api';
@@ -35,6 +35,14 @@ it('provides a native sort control that requests the chosen order', async () => 
   fireEvent.change(sorting, { target: { value: 'price-low' } });
   expect(sorting.value).toBe('price-low');
   await waitFor(() => expect(api.mock.calls.some(([url]) => url.includes('sort=price-asc'))).toBe(true));
+});
+
+it('shows each size price on shop cards, including the fallback main price', async () => {
+  api.mockResolvedValue({ data: [{ _id: 'a'.repeat(24), name: 'Size-priced shirt', price: 10, discount: '20%', rating: 5, image: '/test.png', sizes: ['Small', 'Large', 'XL'], sizePrices: [{ size: 'Small', price: 25 }, { size: 'Large', price: 40 }] }], pagination: { total: 1 } });
+  render(<MemoryRouter><Shop /></MemoryRouter>);
+  const prices = await screen.findByRole('list', { name: 'Prices by size' });
+  const rows = within(prices).getAllByRole('listitem');
+  expect(rows.map(row => row.textContent)).toEqual(['Small$20', 'Large$32', 'XL$10']);
 });
 
 it('exposes bounded native price sliders and applies or clears their values', async () => {

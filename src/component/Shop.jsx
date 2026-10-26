@@ -22,6 +22,7 @@ import "./Shop.css";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "../api";
 import Header from "./Header";
+import SizePrices from './SizePrices';
 import Footer from "./Footer";
 import { discountLabel } from '../productPricing';
 
@@ -768,6 +769,7 @@ export default function Shop() {
                         <span className="shop-discount">{product.discount}</span>
                       )}
                     </div>
+                    <SizePrices product={product} />
                   </article>
                 ); }
               )}

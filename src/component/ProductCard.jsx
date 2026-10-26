@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Link } from "react-router-dom";
 import Rating from './Rating';
+import SizePrices from './SizePrices';
 import { discountLabel } from '../productPricing';
 export default function ProductCard({item}) {
   const { money } = useCurrency();
@@ -35,6 +36,7 @@ export default function ProductCard({item}) {
         {Number(price.oldPrice) > 0 && <del>{money(price.oldPrice)}</del>}
         {hasDiscount(item.discount) && <span className="discount">{item.discount}</span>}
       </div>
+      <SizePrices product={item} />
     </article>
  
  </>
